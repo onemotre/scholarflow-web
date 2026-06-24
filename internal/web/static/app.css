@@ -12,3 +12,11 @@ body { font-family: Charter, Georgia, "Noto Serif CJK SC", "Source Han Serif SC"
 .paper-meta { color: #666; font-size: 0.85rem; }
 .card-list { margin-top: 0.3rem; }
 .notice { background: #fff8e1; border-left: 3px solid #9a6700; padding: 0.6rem 1rem; }
+/* Comma between adjacent sidenote/citation markers (Tufte counters otherwise
+   butt the superscript numbers together). */
+.sidenote-comma { vertical-align: super; font-size: 0.7rem; font-feature-settings: "sups"; }
+/* Inline figure callout shown in the margin at its claim anchor. */
+.figure-callout strong { font-style: normal; }
+.figure-callout { font-size: 0.85rem; }
+/* Holds any list-field notes that had no bullet index, kept out of the heading. */
+.claim-extra { margin-top: 0.2rem; }

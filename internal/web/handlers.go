@@ -47,10 +47,7 @@ func (h *Handler) Paper(w http.ResponseWriter, r *http.Request) {
 		h.renderError(w, http.StatusBadGateway, "后端不可用", "无法从 API 获取论文详情。")
 		return
 	}
-	view := PaperView{Detail: detail}
-	if detail.Card != nil {
-		view.EvidenceByClaim = GroupEvidenceByClaim(detail.Card.Evidence)
-	}
+	view := BuildPaperView(detail)
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 	if err := Render(w, "paper.tmpl", view); err != nil {
 		log.Printf("render paper: %v", err)

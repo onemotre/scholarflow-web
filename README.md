@@ -32,12 +32,12 @@ scholarflow_web/
 
 ### 方式一：随整套 ScholarFlow 一起启动
 
-这是最推荐的方式，适合本地联调整体系统。
+这是最推荐的方式，适合本地联调整体系统。后端与 web 是两个独立的 compose 栈：先把后端拉起来，再单独启动 web。
 
 1. 进入后端目录：
 
 ```bash
-cd /home/onemotre/workspace/scholarflow/scholarflow_server
+cd /home/onemotre/workspace/scholarflow/scholarflow-server
 ```
 
 1. 启动基础依赖：
@@ -46,17 +46,17 @@ cd /home/onemotre/workspace/scholarflow/scholarflow_server
 docker compose up -d postgres redis minio grobid
 ```
 
-1. 初始化数据库：
+1. 启动 API 与 worker（数据库 schema 在启动时自动迁移）：
 
 ```bash
-export DATABASE_URL='postgres://scholarflow:scholarflow@localhost:5432/scholarflow?sslmode=disable'
-go run github.com/pressly/goose/v3/cmd/goose@latest -dir migrations postgres "$DATABASE_URL" up
+docker compose up -d --build api worker
 ```
 
-1. 启动 API、worker 与 web：
+1. 启动 web（独立 compose，经宿主机端口访问后端 API）：
 
 ```bash
-docker compose up -d --build api worker web
+cd /home/onemotre/workspace/scholarflow/scholarflow-web
+docker compose up -d --build
 ```
 
 1. 打开浏览器：
@@ -68,7 +68,7 @@ http://localhost:8090
 ### 方式二：单独启动 `scholarflow_web`
 
 ```bash
-cd /home/onemotre/workspace/scholarflow/scholarflow_web
+cd /home/onemotre/workspace/scholarflow/scholarflow-web
 go run ./cmd/web
 ```
 
@@ -81,14 +81,14 @@ http://localhost:8090
 如果后端 API 地址不是默认值，可以显式指定：
 
 ```bash
-cd /home/onemotre/workspace/scholarflow/scholarflow_web
+cd /home/onemotre/workspace/scholarflow/scholarflow-web
 SCHOLARFLOW_API_URL=http://localhost:8080 WEB_ADDR=:8090 go run ./cmd/web
 ```
 
 ### 方式三：使用 Docker 单独构建运行
 
 ```bash
-cd /home/onemotre/workspace/scholarflow/scholarflow_web
+cd /home/onemotre/workspace/scholarflow/scholarflow-web
 docker build -t scholarflow-web .
 docker run --rm -p 8090:8090 \
   -e SCHOLARFLOW_API_URL=http://host.docker.internal:8080 \
@@ -130,9 +130,9 @@ docker run --rm -p 8090:8090 \
 
 - 展示论文标题、作者、年份、DOI
 - 如果后端已经生成 `card`，页面会按字段渲染阅读摘要
-- 证据会按 `claim_key` 分组，并以边注形式附着在对应内容旁边
+- 证据按 `claim_key` + `claim_index` 分组，以边注形式附着在对应字段或列表条目（如每条结果）旁边；相邻引用以逗号分隔，并标注页码 `[p.N]`
+- 图表会按其归属的语义位置内联展示为边注（标签 + 页码 + 说明），而非单独的图表列表
 - 若阅读尚未完成，会显示当前处理状态
-- 若存在图表信息，会额外展示图表标题列表
 
 ## 📝 开发进展日志
 
@@ -141,8 +141,8 @@ docker run --rm -p 8090:8090 \
 - 建立基础视图渲染结构与错误页
 - 增加 Tufte 风格模板与静态样式资源
 - 支持论文列表页与论文阅读页
-- 支持将证据按 `claim_key` 分组并渲染为边注
-- 支持展示图表标题、链接和卡片字段内容
+- 支持将证据按 `claim_key` + `claim_index` 分组并渲染为带页码的边注（相邻引用逗号分隔）
+- 支持图表按语义锚点内联展示、链接和卡片字段内容
 - 增加 Web 服务入口 `cmd/web`
 - 增加 Dockerfile
 - 接入整套系统的 Compose 启动流程

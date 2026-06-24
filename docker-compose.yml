@@ -1,0 +1,15 @@
+services:
+  web:
+    build: .
+    environment:
+      # The web frontend only needs the server at runtime, so it talks to the
+      # API over the host's published port rather than sharing the server's
+      # Compose network. On Linux, host.docker.internal resolves via the
+      # host-gateway entry below; override SCHOLARFLOW_API_URL if the API is
+      # reachable at a different address.
+      SCHOLARFLOW_API_URL: ${SCHOLARFLOW_API_URL:-http://host.docker.internal:8080}
+      WEB_ADDR: ":8090"
+    ports:
+      - "8090:8090"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"

@@ -59,24 +59,35 @@ type Figure struct {
 
 type Evidence struct {
 	ClaimKey     string  `json:"claim_key"`
+	ClaimIndex   *int    `json:"claim_index,omitempty"`
 	EvidenceType string  `json:"evidence_type"`
 	SectionID    string  `json:"section_id,omitempty"`
 	Snippet      string  `json:"snippet,omitempty"`
+	Page         *int    `json:"page,omitempty"`
 	Confidence   float64 `json:"confidence"`
 }
 
+// CardFigure places a figure (by label) at a claim anchor. Caption is not part
+// of the card; the viewer resolves it from PaperDetail.Figures by label.
+type CardFigure struct {
+	Label      string `json:"label"`
+	ClaimKey   string `json:"claim_key"`
+	ClaimIndex *int   `json:"claim_index,omitempty"`
+	Page       *int   `json:"page,omitempty"`
+}
+
 type Card struct {
-	Background     string     `json:"background"`
-	Problem        string     `json:"problem"`
-	Method         string     `json:"method"`
-	Implementation string     `json:"implementation"`
-	Benchmarks     []string   `json:"benchmarks"`
-	Baselines      []string   `json:"baselines"`
-	Results        []string   `json:"results"`
-	CodeLinks      []string   `json:"code_links"`
-	DataLinks      []string   `json:"data_links"`
-	KeyFigures     []string   `json:"key_figures"`
-	Evidence       []Evidence `json:"evidence"`
+	Background     string       `json:"background"`
+	Problem        string       `json:"problem"`
+	Method         string       `json:"method"`
+	Implementation string       `json:"implementation"`
+	Benchmarks     []string     `json:"benchmarks"`
+	Baselines      []string     `json:"baselines"`
+	Results        []string     `json:"results"`
+	CodeLinks      []string     `json:"code_links"`
+	DataLinks      []string     `json:"data_links"`
+	Figures        []CardFigure `json:"figures"`
+	Evidence       []Evidence   `json:"evidence"`
 }
 
 type PaperDetail struct {
