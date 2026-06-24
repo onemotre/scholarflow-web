@@ -1,0 +1,18 @@
+{{define "title"}}ScholarFlow — 论文集{{end}}
+{{define "content"}}
+<h1>ScholarFlow</h1>
+<p class="subtitle">已采集与阅读的论文</p>
+{{if .}}
+<ul class="paper-list">
+{{range .}}
+  <li>
+    <a href="/papers/{{.PaperID}}">{{if .Title}}{{.Title}}{{else}}{{.UploadedFilename}}{{end}}</a>
+    <span class="status-badge status-{{.Status}}">{{.Status}}</span>
+    <div class="paper-meta">{{if .PublicationYear}}{{.PublicationYear}} · {{end}}{{.UploadedFilename}}</div>
+  </li>
+{{end}}
+</ul>
+{{else}}
+<p class="notice">还没有论文。先通过 API 上传一篇 PDF。</p>
+{{end}}
+{{end}}

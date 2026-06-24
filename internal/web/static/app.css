@@ -1,0 +1,14 @@
+/* Override Tufte's Latin-only ET-Book with a serif + CJK fallback stack so
+   Chinese cards read well. Loaded after tufte.css. */
+html { font-size: 15px; }
+body { font-family: Charter, Georgia, "Noto Serif CJK SC", "Source Han Serif SC", "Songti SC", "SimSun", serif; }
+.status-badge { font-family: sans-serif; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.05em; padding: 0.1rem 0.4rem; border: 1px solid currentColor; border-radius: 0.2rem; }
+.status-completed { color: #1a7f37; }
+.status-failed { color: #b42318; }
+.status-reading, .status-processing, .status-parsed, .status-queued { color: #9a6700; }
+.paper-list { list-style: none; padding-left: 0; }
+.paper-list li { margin: 0.8rem 0; }
+.paper-list a { font-weight: 600; }
+.paper-meta { color: #666; font-size: 0.85rem; }
+.card-list { margin-top: 0.3rem; }
+.notice { background: #fff8e1; border-left: 3px solid #9a6700; padding: 0.6rem 1rem; }

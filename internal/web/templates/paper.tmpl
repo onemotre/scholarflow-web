@@ -1,0 +1,32 @@
+{{define "title"}}{{if .Detail.Title}}{{.Detail.Title}}{{else}}论文{{end}} — ScholarFlow{{end}}
+{{define "content"}}
+{{$ev := .EvidenceByClaim}}
+<p><a href="/">← 返回论文集</a></p>
+<h1>{{if .Detail.Title}}{{.Detail.Title}}{{else}}{{.Detail.UploadedFilename}}{{end}}</h1>
+<p class="subtitle">
+  {{range $i, $a := .Detail.Authors}}{{if $i}}, {{end}}{{$a.DisplayName}}{{end}}
+  {{if .Detail.PublicationYear}} · {{.Detail.PublicationYear}}{{end}}
+  {{if .Detail.DOI}} · {{.Detail.DOI}}{{end}}
+</p>
+{{if .Detail.Card}}
+  {{$card := .Detail.Card}}
+  {{with $card.Background}}<section><h2>背景</h2><p>{{.}}{{template "sidenotes" index $ev "background"}}</p></section>{{end}}
+  {{with $card.Problem}}<section><h2>问题</h2><p>{{.}}{{template "sidenotes" index $ev "problem"}}</p></section>{{end}}
+  {{with $card.Method}}<section><h2>方法</h2><p>{{.}}{{template "sidenotes" index $ev "method"}}</p></section>{{end}}
+  {{with $card.Implementation}}<section><h2>实现</h2><p>{{.}}{{template "sidenotes" index $ev "implementation"}}</p></section>{{end}}
+  {{if $card.Results}}<section><h2>结果{{template "sidenotes" index $ev "results"}}</h2><ul class="card-list">{{range $card.Results}}<li>{{.}}</li>{{end}}</ul></section>{{end}}
+  {{if $card.Benchmarks}}<section><h2>评测基准</h2><ul class="card-list">{{range $card.Benchmarks}}<li>{{.}}</li>{{end}}</ul></section>{{end}}
+  {{if $card.Baselines}}<section><h2>对比基线</h2><ul class="card-list">{{range $card.Baselines}}<li>{{.}}</li>{{end}}</ul></section>{{end}}
+  {{if $card.KeyFigures}}<section><h2>关键图表{{template "sidenotes" index $ev "key_figures"}}</h2><ul class="card-list">{{range $card.KeyFigures}}<li>{{.}}</li>{{end}}</ul></section>{{end}}
+  {{if or $card.CodeLinks $card.DataLinks}}<section><h2>链接</h2><ul class="card-list">{{range $card.CodeLinks}}<li><a href="{{.}}">{{.}}</a></li>{{end}}{{range $card.DataLinks}}<li><a href="{{.}}">{{.}}</a></li>{{end}}</ul></section>{{end}}
+{{else}}
+  <p class="notice">阅读尚未完成（状态：{{.Detail.Status}}）。</p>
+{{end}}
+{{if .Detail.Figures}}
+<section><h2>图表标题</h2><ul class="card-list">
+{{range .Detail.Figures}}<li>[{{.Kind}}] <strong>{{.Label}}</strong> {{.Caption}}</li>{{end}}
+</ul></section>
+{{end}}
+{{end}}
+
+{{define "sidenotes"}}{{range $i, $e := .}}<label for="sn-{{$e.ClaimKey}}-{{$i}}" class="margin-toggle sidenote-number"></label><input type="checkbox" id="sn-{{$e.ClaimKey}}-{{$i}}" class="margin-toggle"/><span class="sidenote">{{if $e.SectionID}}[§{{$e.SectionID}}] {{end}}{{$e.Snippet}}</span>{{end}}{{end}}
