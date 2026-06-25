@@ -3,14 +3,18 @@ package web
 import (
 	"fmt"
 	"strings"
+	"unicode"
 
 	"scholarflow_web/internal/apiclient"
 )
 
-// OutlineEntry is one parsed-section heading for the thesis outline.
+// OutlineEntry is one parsed-section heading for the thesis outline. Number is
+// the GROBID section number (e.g. "2.1") and Level is its 0-based indent depth.
 type OutlineEntry struct {
+	Number  string
 	Heading string
 	Page    *int
+	Level   int
 }
 
 // PaperView is the reading-page model. Evidence and figure callouts are grouped
@@ -56,13 +60,27 @@ func claimKey(field string, index *int) string {
 // rendering. Figure captions are resolved from PaperDetail.Figures by label.
 func BuildPaperView(detail apiclient.PaperDetail) PaperView {
 	view := PaperView{Detail: detail}
+	lastLevel := 0
 	for _, s := range detail.Sections {
 		if s.Heading == nil || strings.TrimSpace(*s.Heading) == "" {
 			continue
 		}
+		number := ""
+		if s.Number != nil {
+			number = strings.TrimRight(strings.TrimSpace(*s.Number), ".")
+		}
+		// Level comes from the section number's dot-depth (1 -> 0, 2.1 -> 1).
+		// Unnumbered run-in subheadings nest one level under the last numbered one.
+		level := lastLevel + 1
+		if number != "" {
+			level = strings.Count(number, ".")
+			lastLevel = level
+		}
 		view.Outline = append(view.Outline, OutlineEntry{
-			Heading: *s.Heading,
+			Number:  number,
+			Heading: strings.TrimSpace(*s.Heading),
 			Page:    intFromInt32(s.PageStart),
+			Level:   level,
 		})
 	}
 	if detail.Card == nil {
@@ -95,7 +113,7 @@ func BuildPaperView(detail apiclient.PaperDetail) PaperView {
 			DOMID:    fmt.Sprintf("fn-%d", id),
 			Label:    f.Label,
 			Page:     f.Page,
-			Caption:  src.Caption,
+			Caption:  trimLabelPrefix(src.Caption, f.Label),
 			HasImage: src.HasImage,
 		}
 		if src.HasImage {
@@ -106,8 +124,29 @@ func BuildPaperView(detail apiclient.PaperDetail) PaperView {
 	return view
 }
 
+// normalizeLabel reduces a figure label to its alphanumeric core so the card's
+// clean label ("Figure 2") matches GROBID's noisier one ("Figure 2 :"). Both
+// collapse to "figure2".
+// trimLabelPrefix drops a leading repetition of the figure label from the
+// caption (GROBID captions often start "Figure 7: ...") so the callout doesn't
+// render "Figure 7：Figure 7: ...". Best-effort: only trims an exact prefix.
+func trimLabelPrefix(caption, label string) string {
+	c := strings.TrimSpace(caption)
+	label = strings.TrimSpace(label)
+	if label != "" && strings.HasPrefix(strings.ToLower(c), strings.ToLower(label)) {
+		c = strings.TrimLeft(c[len(label):], " :：")
+	}
+	return c
+}
+
 func normalizeLabel(label string) string {
-	return strings.Join(strings.Fields(strings.ToLower(label)), " ")
+	var b strings.Builder
+	for _, r := range strings.ToLower(label) {
+		if unicode.IsLetter(r) || unicode.IsDigit(r) {
+			b.WriteRune(r)
+		}
+	}
+	return b.String()
 }
 
 func intFromInt32(v *int32) *int {
