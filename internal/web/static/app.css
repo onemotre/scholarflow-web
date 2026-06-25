@@ -21,9 +21,11 @@ body { font-family: Charter, Georgia, "Noto Serif CJK SC", "Source Han Serif SC"
 /* Holds any list-field notes that had no bullet index, kept out of the heading. */
 .claim-extra { margin-top: 0.2rem; }
 /* --- v3 reading sections --- */
+.meth-problem { color: #555; }
 .meth-arrow { color: #999; }
 .meth-method { font-weight: 600; }
 .result { margin: 0.6rem 0 1rem; }
+.result-metric { margin: 0; }
 .badge-self { font-family: sans-serif; font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.05em; padding: 0.05rem 0.35rem; border: 1px solid #9a6700; color: #9a6700; border-radius: 0.2rem; }
 table.cmp { border-collapse: collapse; font-size: 0.9rem; margin-top: 0.3rem; }
 table.cmp th, table.cmp td { border-bottom: 1px solid #ddd; padding: 0.2rem 0.6rem 0.2rem 0; text-align: left; }
