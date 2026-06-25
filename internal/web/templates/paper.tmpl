@@ -26,7 +26,7 @@
     </tbody></table>{{end}}
   </div>{{end}}</section>{{end}}
   {{$impl := $card.Implementation}}{{if or $impl.Overview $impl.Modules}}<section><h2>实现</h2>
-  {{with $impl.Overview}}<p>{{.}}{{template "sidenotes" index $ev "implementation"}}{{template "inlinefigures" index $figs "implementation"}}</p>{{end}}
+  {{with $impl.Overview}}<p>{{.}}{{template "sidenotes" index $ev "implementation"}}</p>{{end}}{{template "inlinefigures" index $figs "implementation"}}
   {{if $impl.Modules}}<ul class="card-list">
   {{range $i, $mod := $impl.Modules}}{{$key := printf "modules#%d" $i}}<li><strong>{{$mod.Name}}</strong>{{with $mod.Function}} — {{.}}{{end}}{{with $mod.Design}}<br><span class="mod-label">设计：</span>{{.}}{{end}}{{with $mod.Principle}}<br><span class="mod-label">原理：</span>{{.}}{{end}}{{template "sidenotes" index $ev $key}}{{template "figurenotes" index $figs $key}}</li>
   {{end}}</ul>{{end}}
