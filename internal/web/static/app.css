@@ -34,3 +34,9 @@ table.cmp th, table.cmp td { border-bottom: 1px solid #ddd; padding: 0.2rem 0.6r
    stay visible); expand to full text on hover. */
 .sidenote { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .sidenote:hover { white-space: normal; overflow: visible; }
+/* --- abstract & outline blocks --- */
+.block-label { display: block; font-family: sans-serif; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.05em; color: #666; margin-bottom: 0.2rem; }
+.abstract-block { background: #f6f4ec; border-left: 3px solid #b0a98f; padding: 0.6rem 1rem; margin: 0.8rem 0; }
+.outline-block { border: 1px dashed #cfc9b6; padding: 0.4rem 1rem; margin: 0.8rem 0; }
+.outline-list { margin: 0; }
+.outline-page { color: #999; font-size: 0.85rem; }

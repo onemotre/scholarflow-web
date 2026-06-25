@@ -9,6 +9,8 @@
   {{if .Detail.PublicationYear}} · {{.Detail.PublicationYear}}{{end}}
   {{if .Detail.DOI}} · {{.Detail.DOI}}{{end}}
 </p>
+{{with .Detail.Abstract}}<section class="abstract-block"><span class="block-label">摘要 / Abstract</span>{{.}}</section>{{end}}
+{{if .Outline}}<nav class="outline-block"><span class="block-label">目录 / Outline</span><ol class="outline-list">{{range .Outline}}<li>{{.Heading}}{{if .Page}} <span class="outline-page">p.{{.Page}}</span>{{end}}</li>{{end}}</ol></nav>{{end}}
 {{if .Detail.Card}}
   {{$card := .Detail.Card}}
   {{with $card.Introduction}}<section><h2>引言</h2><p>{{.}}{{template "sidenotes" index $ev "introduction"}}{{template "figurenotes" index $figs "introduction"}}</p></section>{{end}}

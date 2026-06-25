@@ -7,11 +7,18 @@ import (
 	"scholarflow_web/internal/apiclient"
 )
 
+// OutlineEntry is one parsed-section heading for the thesis outline.
+type OutlineEntry struct {
+	Heading string
+	Page    *int
+}
+
 // PaperView is the reading-page model. Evidence and figure callouts are grouped
 // by a composite claim key so each claim — or each individual bullet of a list
 // field — renders its own sidenotes and inline figure callouts.
 type PaperView struct {
 	Detail          apiclient.PaperDetail
+	Outline         []OutlineEntry
 	EvidenceByClaim map[string][]EvidenceNote
 	FiguresByClaim  map[string][]FigureNote
 }
@@ -47,6 +54,15 @@ func claimKey(field string, index *int) string {
 // rendering. Figure captions are resolved from PaperDetail.Figures by label.
 func BuildPaperView(detail apiclient.PaperDetail) PaperView {
 	view := PaperView{Detail: detail}
+	for _, s := range detail.Sections {
+		if s.Heading == nil || strings.TrimSpace(*s.Heading) == "" {
+			continue
+		}
+		view.Outline = append(view.Outline, OutlineEntry{
+			Heading: *s.Heading,
+			Page:    intFromInt32(s.PageStart),
+		})
+	}
 	if detail.Card == nil {
 		return view
 	}
@@ -84,4 +100,12 @@ func BuildPaperView(detail apiclient.PaperDetail) PaperView {
 
 func normalizeLabel(label string) string {
 	return strings.Join(strings.Fields(strings.ToLower(label)), " ")
+}
+
+func intFromInt32(v *int32) *int {
+	if v == nil {
+		return nil
+	}
+	n := int(*v)
+	return &n
 }

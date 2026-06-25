@@ -136,3 +136,44 @@ func TestRenderPaperNoCardNotice(t *testing.T) {
 }
 
 func strPtr(s string) *string { return &s }
+
+func TestBuildPaperViewOutline(t *testing.T) {
+	view := BuildPaperView(apiclient.PaperDetail{
+		Sections: []apiclient.Section{
+			{Order: 1, Heading: strPtr("Introduction"), PageStart: int32Ptr(1)},
+			{Order: 2, Heading: nil},        // skipped (no heading)
+			{Order: 3, Heading: strPtr("")}, // skipped (empty heading)
+			{Order: 4, Heading: strPtr("Results"), PageStart: int32Ptr(6)},
+		},
+	})
+	if len(view.Outline) != 2 {
+		t.Fatalf("outline = %#v, want 2 entries", view.Outline)
+	}
+	if view.Outline[0].Heading != "Introduction" || view.Outline[0].Page == nil || *view.Outline[0].Page != 1 {
+		t.Fatalf("outline[0] = %#v", view.Outline[0])
+	}
+	if view.Outline[1].Heading != "Results" {
+		t.Fatalf("outline[1] = %#v", view.Outline[1])
+	}
+}
+
+func TestRenderPaperAbstractAndOutline(t *testing.T) {
+	var b strings.Builder
+	view := BuildPaperView(apiclient.PaperDetail{
+		PaperID: "p1", Status: "completed", UploadedFilename: "a.pdf",
+		Abstract: strPtr("这是原始摘要"),
+		Sections: []apiclient.Section{{Order: 1, Heading: strPtr("引言章节"), PageStart: int32Ptr(2)}},
+		Card:     &apiclient.Card{Introduction: "正文"},
+	})
+	if err := Render(&b, "paper.tmpl", view); err != nil {
+		t.Fatalf("render: %v", err)
+	}
+	out := b.String()
+	for _, want := range []string{"摘要", "这是原始摘要", "目录", "引言章节", "p.2"} {
+		if !strings.Contains(out, want) {
+			t.Fatalf("missing %q in:\n%s", want, out)
+		}
+	}
+}
+
+func int32Ptr(v int32) *int32 { return &v }
