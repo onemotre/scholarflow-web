@@ -61,6 +61,7 @@ type Figure struct {
 
 type Section struct {
 	Order     int32   `json:"order"`
+	Number    *string `json:"number,omitempty"`
 	Heading   *string `json:"heading,omitempty"`
 	PageStart *int32  `json:"page_start,omitempty"`
 	PageEnd   *int32  `json:"page_end,omitempty"`

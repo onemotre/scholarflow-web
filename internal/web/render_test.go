@@ -140,20 +140,48 @@ func strPtr(s string) *string { return &s }
 func TestBuildPaperViewOutline(t *testing.T) {
 	view := BuildPaperView(apiclient.PaperDetail{
 		Sections: []apiclient.Section{
-			{Order: 1, Heading: strPtr("Introduction"), PageStart: int32Ptr(1)},
+			{Order: 1, Number: strPtr("1."), Heading: strPtr("Introduction"), PageStart: int32Ptr(1)},
 			{Order: 2, Heading: nil},        // skipped (no heading)
 			{Order: 3, Heading: strPtr("")}, // skipped (empty heading)
-			{Order: 4, Heading: strPtr("Results"), PageStart: int32Ptr(6)},
+			{Order: 4, Number: strPtr("2."), Heading: strPtr("Results"), PageStart: int32Ptr(6)},
+			{Order: 5, Number: strPtr("2.1."), Heading: strPtr("Motion Tracking"), PageStart: int32Ptr(6)},
+			{Order: 6, Heading: strPtr("Run-in heading")}, // unnumbered -> nests under 2.1
 		},
 	})
-	if len(view.Outline) != 2 {
-		t.Fatalf("outline = %#v, want 2 entries", view.Outline)
+	if len(view.Outline) != 4 {
+		t.Fatalf("outline = %#v, want 4 entries", view.Outline)
 	}
-	if view.Outline[0].Heading != "Introduction" || view.Outline[0].Page == nil || *view.Outline[0].Page != 1 {
-		t.Fatalf("outline[0] = %#v", view.Outline[0])
+	if e := view.Outline[0]; e.Heading != "Introduction" || e.Number != "1" || e.Level != 0 || e.Page == nil || *e.Page != 1 {
+		t.Fatalf("outline[0] = %#v", e)
 	}
-	if view.Outline[1].Heading != "Results" {
-		t.Fatalf("outline[1] = %#v", view.Outline[1])
+	if e := view.Outline[1]; e.Heading != "Results" || e.Number != "2" || e.Level != 0 {
+		t.Fatalf("outline[1] = %#v", e)
+	}
+	if e := view.Outline[2]; e.Heading != "Motion Tracking" || e.Number != "2.1" || e.Level != 1 {
+		t.Fatalf("outline[2] = %#v", e)
+	}
+	if e := view.Outline[3]; e.Number != "" || e.Level != 2 {
+		t.Fatalf("outline[3] (unnumbered run-in) = %#v, want level 2", e)
+	}
+}
+
+func TestBuildPaperViewMatchesNoisyFigureLabels(t *testing.T) {
+	// Card labels are clean ("Figure 2"); GROBID detail labels carry a trailing
+	// " :" ("Figure 2 :"). They must still resolve to the same figure.
+	view := BuildPaperView(apiclient.PaperDetail{
+		PaperID: "p1",
+		Figures: []apiclient.Figure{{Label: "Figure 2 :", Caption: "曲线图", ID: "f2", HasImage: true}},
+		Card: &apiclient.Card{
+			Results: []apiclient.CardResult{{Metric: "acc"}},
+			Figures: []apiclient.CardFigure{{Label: "Figure 2", ClaimKey: "results", ClaimIndex: intPtr(0)}},
+		},
+	})
+	notes := view.FiguresByClaim["results#0"]
+	if len(notes) != 1 {
+		t.Fatalf("FiguresByClaim[results#0] = %#v, want 1 note", notes)
+	}
+	if n := notes[0]; !n.HasImage || n.Caption != "曲线图" || n.ImageURL != "/papers/p1/figures/f2/image" {
+		t.Fatalf("note did not resolve noisy label: %#v", n)
 	}
 }
 
