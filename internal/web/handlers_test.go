@@ -48,12 +48,12 @@ func TestPaperRendersCard(t *testing.T) {
 	rr := httptest.NewRecorder()
 	routerFor(&fakeAPI{detail: apiclient.PaperDetail{
 		PaperID: "p1", Status: "completed", UploadedFilename: "a.pdf",
-		Card: &apiclient.Card{Method: "方法X", Evidence: []apiclient.Evidence{{ClaimKey: "method", SectionID: "3", Snippet: "片段"}}},
+		Card: &apiclient.Card{Introduction: "引言X", Evidence: []apiclient.Evidence{{ClaimKey: "introduction", SectionID: "3", Snippet: "片段"}}},
 	}}).ServeHTTP(rr, httptest.NewRequest(http.MethodGet, "/papers/p1", nil))
 	if rr.Code != http.StatusOK {
 		t.Fatalf("code=%d", rr.Code)
 	}
-	for _, want := range []string{"方法X", "sidenote", "片段"} {
+	for _, want := range []string{"引言X", "sidenote", "片段"} {
 		if !strings.Contains(rr.Body.String(), want) {
 			t.Fatalf("missing %q", want)
 		}

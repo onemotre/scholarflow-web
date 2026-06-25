@@ -20,3 +20,15 @@ body { font-family: Charter, Georgia, "Noto Serif CJK SC", "Source Han Serif SC"
 .figure-callout { font-size: 0.85rem; }
 /* Holds any list-field notes that had no bullet index, kept out of the heading. */
 .claim-extra { margin-top: 0.2rem; }
+/* --- v3 reading sections --- */
+.meth-arrow { color: #999; }
+.meth-method { font-weight: 600; }
+.result { margin: 0.6rem 0 1rem; }
+.badge-self { font-family: sans-serif; font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.05em; padding: 0.05rem 0.35rem; border: 1px solid #9a6700; color: #9a6700; border-radius: 0.2rem; }
+table.cmp { border-collapse: collapse; font-size: 0.9rem; margin-top: 0.3rem; }
+table.cmp th, table.cmp td { border-bottom: 1px solid #ddd; padding: 0.2rem 0.6rem 0.2rem 0; text-align: left; }
+.mod-label { color: #666; font-size: 0.85rem; }
+/* Demand 4: clamp each comment to one line (number + [§]/[p.] lead the line and
+   stay visible); expand to full text on hover. */
+.sidenote { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.sidenote:hover { white-space: normal; overflow: visible; }

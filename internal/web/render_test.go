@@ -14,7 +14,7 @@ func TestBuildPaperViewGroupsByCompositeClaim(t *testing.T) {
 		Figures: []apiclient.Figure{{Label: "Figure 2", Caption: "结构图"}},
 		Card: &apiclient.Card{
 			Evidence: []apiclient.Evidence{
-				{ClaimKey: "method", SectionID: "3", Snippet: "a"},
+				{ClaimKey: "introduction", SectionID: "3", Snippet: "a"},
 				{ClaimKey: "results", ClaimIndex: intPtr(0), SectionID: "4", Snippet: "b"},
 				{ClaimKey: "results", ClaimIndex: intPtr(0), SectionID: "5", Snippet: "c"},
 			},
@@ -23,8 +23,8 @@ func TestBuildPaperViewGroupsByCompositeClaim(t *testing.T) {
 			},
 		},
 	})
-	if len(view.EvidenceByClaim["method"]) != 1 {
-		t.Fatalf("method evidence = %#v", view.EvidenceByClaim["method"])
+	if len(view.EvidenceByClaim["introduction"]) != 1 {
+		t.Fatalf("introduction evidence = %#v", view.EvidenceByClaim["introduction"])
 	}
 	if len(view.EvidenceByClaim["results#0"]) != 2 {
 		t.Fatalf("results#0 evidence = %#v", view.EvidenceByClaim["results#0"])
@@ -33,7 +33,6 @@ func TestBuildPaperViewGroupsByCompositeClaim(t *testing.T) {
 	if len(figs) != 1 || figs[0].Caption != "结构图" || figs[0].Page == nil || *figs[0].Page != 3 {
 		t.Fatalf("results#0 figures = %#v", figs)
 	}
-	// DOM ids must be unique across all notes.
 	seen := map[string]bool{}
 	for _, notes := range view.EvidenceByClaim {
 		for _, n := range notes {
@@ -70,91 +69,58 @@ func TestRenderCollection(t *testing.T) {
 	}
 }
 
-func TestRenderPaperWithSidenotes(t *testing.T) {
-	method := "我们提出 TD-MPC 方法"
+func TestRenderPaperV3Sections(t *testing.T) {
 	var b strings.Builder
 	view := BuildPaperView(apiclient.PaperDetail{
 		PaperID: "p1", Status: "completed", UploadedFilename: "a.pdf",
 		Card: &apiclient.Card{
-			Method:   method,
-			Evidence: []apiclient.Evidence{{ClaimKey: "method", SectionID: "3", Snippet: "证据片段"}},
+			Introduction: "本文研究 X",
+			Methodology:  []apiclient.CardMethodology{{Problem: "稀疏", Method: "门控"}},
+			Results: []apiclient.CardResult{{
+				Metric: "准确率", Finding: "提升4分", SelfOnly: true,
+				Comparisons: []apiclient.CardComparison{{Work: "BaseX", Value: "80%", Reference: "[12]"}},
+			}},
+			Implementation: apiclient.CardImplementation{
+				Overview: "整体设计",
+				Modules:  []apiclient.CardModule{{Name: "编码器", Function: "编码输入", Principle: "E=mc^2"}},
+			},
+			Evidence: []apiclient.Evidence{{ClaimKey: "results", ClaimIndex: intPtr(0), SectionID: "3", Page: intPtr(7), Snippet: "证据A"}},
 		},
 	})
 	if err := Render(&b, "paper.tmpl", view); err != nil {
 		t.Fatalf("render: %v", err)
 	}
 	out := b.String()
-	for _, want := range []string{method, "sidenote", "[§3]", "证据片段"} {
+	for _, want := range []string{
+		"本文研究 X", "稀疏", "门控", "准确率", "提升4分", "仅自测",
+		"BaseX", "80%", "[12]", "整体设计", "编码器", "E=mc^2",
+		// comment keeps both section and page, plus snippet:
+		"[§3]", "[p.7]", "证据A", "sidenote",
+	} {
 		if !strings.Contains(out, want) {
 			t.Fatalf("paper missing %q in:\n%s", want, out)
 		}
 	}
 }
 
-func TestRenderPaperResultsPerBulletWithPagesAndCommas(t *testing.T) {
+func TestRenderPaperEmptyCardRendersNoSections(t *testing.T) {
+	// A non-nil card with empty v3 fields (e.g. an old 2.0 card decoded into v3)
+	// renders the page without erroring and without the no-card notice.
 	var b strings.Builder
 	view := BuildPaperView(apiclient.PaperDetail{
 		PaperID: "p1", Status: "completed", UploadedFilename: "a.pdf",
-		Figures: []apiclient.Figure{{Label: "Figure 2", Caption: "成功率曲线"}},
-		Card: &apiclient.Card{
-			Results: []string{"结果一", "结果二"},
-			Method:  "方法说明",
-			Evidence: []apiclient.Evidence{
-				{ClaimKey: "results", ClaimIndex: intPtr(0), Page: intPtr(7), Snippet: "证据A"},
-				{ClaimKey: "results", ClaimIndex: intPtr(0), Page: intPtr(8), Snippet: "证据B"},
-			},
-			Figures: []apiclient.CardFigure{
-				{Label: "Figure 2", ClaimKey: "method", Page: intPtr(5)},
-			},
-		},
+		Title: strPtr("空卡片"),
+		Card:  &apiclient.Card{},
 	})
 	if err := Render(&b, "paper.tmpl", view); err != nil {
 		t.Fatalf("render: %v", err)
 	}
 	out := b.String()
-	// Per-bullet results evidence with page labels.
-	for _, want := range []string{"结果一", "结果二", "[p.7]", "[p.8]", "证据A", "证据B"} {
-		if !strings.Contains(out, want) {
-			t.Fatalf("missing %q in:\n%s", want, out)
-		}
+	if !strings.Contains(out, "空卡片") {
+		t.Fatalf("expected title rendered, got:\n%s", out)
 	}
-	// Adjacent markers comma-separated.
-	if !strings.Contains(out, "sidenote-comma") {
-		t.Fatalf("expected comma separator between adjacent sidenotes:\n%s", out)
-	}
-	// Figure callout placed inline at the method claim, with caption + page.
-	for _, want := range []string{"figure-callout", "成功率曲线", "第 5 页"} {
-		if !strings.Contains(out, want) {
-			t.Fatalf("missing figure callout %q in:\n%s", want, out)
-		}
-	}
-	// No standalone figure dump sections.
-	for _, unwant := range []string{"关键图表", "图表标题"} {
-		if strings.Contains(out, unwant) {
-			t.Fatalf("did not expect dump section %q in:\n%s", unwant, out)
-		}
-	}
-}
-
-func TestRenderPaperBackwardCompatibleWithV1Card(t *testing.T) {
-	// A 1.0 card has no claim_index / figures / page fields.
-	var b strings.Builder
-	view := BuildPaperView(apiclient.PaperDetail{
-		PaperID: "p1", Status: "completed", UploadedFilename: "a.pdf",
-		Card: &apiclient.Card{
-			Method:   "旧版方法",
-			Results:  []string{"旧结果"},
-			Evidence: []apiclient.Evidence{{ClaimKey: "method", SectionID: "2", Snippet: "旧证据"}},
-		},
-	})
-	if err := Render(&b, "paper.tmpl", view); err != nil {
-		t.Fatalf("render: %v", err)
-	}
-	out := b.String()
-	for _, want := range []string{"旧版方法", "旧结果", "[§2]", "旧证据"} {
-		if !strings.Contains(out, want) {
-			t.Fatalf("v1 card missing %q in:\n%s", want, out)
-		}
+	if strings.Contains(out, "阅读尚未完成") {
+		t.Fatalf("non-nil card should not show the no-card notice:\n%s", out)
 	}
 }
 
@@ -168,3 +134,5 @@ func TestRenderPaperNoCardNotice(t *testing.T) {
 		t.Fatalf("expected no-card notice, got:\n%s", b.String())
 	}
 }
+
+func strPtr(s string) *string { return &s }

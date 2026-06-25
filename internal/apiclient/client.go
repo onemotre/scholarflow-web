@@ -51,10 +51,19 @@ type Author struct {
 }
 
 type Figure struct {
-	Label   string `json:"label"`
-	Kind    string `json:"kind"`
-	Caption string `json:"caption"`
-	Order   int32  `json:"order"`
+	Label    string `json:"label"`
+	Kind     string `json:"kind"`
+	Caption  string `json:"caption"`
+	Order    int32  `json:"order"`
+	ID       string `json:"id"`
+	HasImage bool   `json:"has_image"`
+}
+
+type Section struct {
+	Order     int32   `json:"order"`
+	Heading   *string `json:"heading,omitempty"`
+	PageStart *int32  `json:"page_start,omitempty"`
+	PageEnd   *int32  `json:"page_end,omitempty"`
 }
 
 type Evidence struct {
@@ -76,30 +85,60 @@ type CardFigure struct {
 	Page       *int   `json:"page,omitempty"`
 }
 
+type CardMethodology struct {
+	Problem string `json:"problem"`
+	Method  string `json:"method"`
+}
+
+type CardComparison struct {
+	Work      string `json:"work"`
+	Value     string `json:"value"`
+	Reference string `json:"reference"`
+}
+
+type CardResult struct {
+	Metric      string           `json:"metric"`
+	Finding     string           `json:"finding"`
+	Comparisons []CardComparison `json:"comparisons"`
+	SelfOnly    bool             `json:"self_only"`
+}
+
+type CardModule struct {
+	Name      string `json:"name"`
+	Function  string `json:"function"`
+	Design    string `json:"design"`
+	Principle string `json:"principle"`
+}
+
+type CardImplementation struct {
+	Overview string       `json:"overview"`
+	Modules  []CardModule `json:"modules"`
+}
+
 type Card struct {
-	Background     string       `json:"background"`
-	Problem        string       `json:"problem"`
-	Method         string       `json:"method"`
-	Implementation string       `json:"implementation"`
-	Benchmarks     []string     `json:"benchmarks"`
-	Baselines      []string     `json:"baselines"`
-	Results        []string     `json:"results"`
-	CodeLinks      []string     `json:"code_links"`
-	DataLinks      []string     `json:"data_links"`
-	Figures        []CardFigure `json:"figures"`
-	Evidence       []Evidence   `json:"evidence"`
+	Introduction   string             `json:"introduction"`
+	RelatedWork    string             `json:"related_work"`
+	Methodology    []CardMethodology  `json:"methodology"`
+	Results        []CardResult       `json:"results"`
+	Implementation CardImplementation `json:"implementation"`
+	CodeLinks      []string           `json:"code_links"`
+	DataLinks      []string           `json:"data_links"`
+	Figures        []CardFigure       `json:"figures"`
+	Evidence       []Evidence         `json:"evidence"`
 }
 
 type PaperDetail struct {
-	PaperID          string   `json:"paper_id"`
-	Status           string   `json:"status"`
-	Title            *string  `json:"title,omitempty"`
-	DOI              *string  `json:"doi,omitempty"`
-	PublicationYear  *int32   `json:"publication_year,omitempty"`
-	UploadedFilename string   `json:"uploaded_filename"`
-	Authors          []Author `json:"authors"`
-	Figures          []Figure `json:"figures"`
-	Card             *Card    `json:"card,omitempty"`
+	PaperID          string    `json:"paper_id"`
+	Status           string    `json:"status"`
+	Title            *string   `json:"title,omitempty"`
+	DOI              *string   `json:"doi,omitempty"`
+	Abstract         *string   `json:"abstract,omitempty"`
+	Sections         []Section `json:"sections"`
+	PublicationYear  *int32    `json:"publication_year,omitempty"`
+	UploadedFilename string    `json:"uploaded_filename"`
+	Authors          []Author  `json:"authors"`
+	Figures          []Figure  `json:"figures"`
+	Card             *Card     `json:"card,omitempty"`
 }
 
 func (c *Client) get(ctx context.Context, path string, out any) error {
