@@ -10,7 +10,11 @@ body { font-family: Charter, Georgia, "Noto Serif CJK SC", "Source Han Serif SC"
 .paper-list li { margin: 0.8rem 0; }
 .paper-list a { font-weight: 600; }
 .paper-meta { color: #666; font-size: 0.85rem; }
-.card-list { margin-top: 0.3rem; }
+/* Align list-based sections (methodology / modules / links) with the left edge
+   of the paragraph sections; Tufte indents section > ul by ~5%, which made the
+   subheading sections' text column start noticeably further right. */
+.card-list { margin-top: 0.3rem; padding-left: 0; list-style: none; }
+.card-list > li { margin-bottom: 0.5rem; }
 .notice { background: #fff8e1; border-left: 3px solid #9a6700; padding: 0.6rem 1rem; }
 /* Comma between adjacent sidenote/citation markers (Tufte counters otherwise
    butt the superscript numbers together). */
@@ -57,9 +61,11 @@ table.cmp th, table.cmp td { border-bottom: 1px solid #ddd; padding: 0.2rem 0.6r
 .outline-l6 { margin-left: 7.2rem; }
 .outline-page { color: #999; font-size: 0.85rem; }
 /* --- figure images --- */
-.inline-figure { margin: 0.8rem 0; }
-.inline-figure img { max-width: 100%; border: 1px solid #ddd; }
-.inline-figure figcaption { font-size: 0.85rem; color: #777; margin-top: 0.3rem; }
+.inline-figure { margin: 0.8rem 0; max-width: 100%; }
+.inline-figure img { display: block; max-width: 100%; border: 1px solid #ddd; }
+/* Override Tufte's float-right margin caption: keep the architecture caption
+   directly below the image at full text width. */
+.inline-figure figcaption { float: none; clear: both; width: auto; max-width: 100%; margin: 0.4rem 0 0 0; font-size: 0.85rem; line-height: 1.5; color: #777; }
 /* Cap the margin thumbnail so tall figures don't overflow the gutter; the
    pure-CSS lightbox still shows it full-size on click. */
 .margin-thumb { display: block; max-width: 100%; max-height: 9rem; width: auto; object-fit: contain; margin-top: 0.3rem; border: 1px solid #ddd; cursor: zoom-in; }
