@@ -3,6 +3,7 @@ package apiclient
 import (
 	"context"
 	"errors"
+	"io"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -64,6 +65,42 @@ func TestGetPaperParsesCard(t *testing.T) {
 	}
 	if len(c.Evidence) != 1 || c.Evidence[0].SectionID != "3" {
 		t.Fatalf("evidence = %#v", c.Evidence)
+	}
+}
+
+func TestGetFigureImage(t *testing.T) {
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.Path != "/v1/papers/p1/figures/f2/image" {
+			t.Errorf("path = %q", r.URL.Path)
+		}
+		w.Header().Set("Content-Type", "image/png")
+		w.Write([]byte("PNGBYTES"))
+	}))
+	defer srv.Close()
+
+	body, ct, err := New(Config{BaseURL: srv.URL}).GetFigureImage(context.Background(), "p1", "f2")
+	if err != nil {
+		t.Fatalf("GetFigureImage: %v", err)
+	}
+	defer body.Close()
+	if ct != "image/png" {
+		t.Fatalf("content-type = %q", ct)
+	}
+	data, _ := io.ReadAll(body)
+	if string(data) != "PNGBYTES" {
+		t.Fatalf("body = %q", string(data))
+	}
+}
+
+func TestGetFigureImageNotFound(t *testing.T) {
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		http.Error(w, "nope", http.StatusNotFound)
+	}))
+	defer srv.Close()
+
+	_, _, err := New(Config{BaseURL: srv.URL}).GetFigureImage(context.Background(), "p1", "missing")
+	if !errors.Is(err, ErrNotFound) {
+		t.Fatalf("want ErrNotFound, got %v", err)
 	}
 }
 

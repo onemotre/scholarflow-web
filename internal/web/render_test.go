@@ -177,3 +177,33 @@ func TestRenderPaperAbstractAndOutline(t *testing.T) {
 }
 
 func int32Ptr(v int32) *int32 { return &v }
+
+func TestRenderPaperFigureImages(t *testing.T) {
+	var b strings.Builder
+	view := BuildPaperView(apiclient.PaperDetail{
+		PaperID: "p1", Status: "completed", UploadedFilename: "a.pdf",
+		Figures: []apiclient.Figure{
+			{Label: "Figure 1", Caption: "架构图", ID: "f1", HasImage: true},
+			{Label: "Figure 3", Caption: "曲线", ID: "f3", HasImage: true},
+		},
+		Card: &apiclient.Card{
+			Implementation: apiclient.CardImplementation{Overview: "系统总体"},
+			Results:        []apiclient.CardResult{{Metric: "acc", Finding: "好"}},
+			Figures: []apiclient.CardFigure{
+				{Label: "Figure 1", ClaimKey: "implementation"},
+				{Label: "Figure 3", ClaimKey: "results", ClaimIndex: intPtr(0)},
+			},
+		},
+	})
+	if err := Render(&b, "paper.tmpl", view); err != nil {
+		t.Fatalf("render: %v", err)
+	}
+	out := b.String()
+	// Architecture figure renders inline; chart figure renders as a margin thumbnail.
+	if !strings.Contains(out, `class="inline-figure"`) || !strings.Contains(out, "/papers/p1/figures/f1/image") {
+		t.Fatalf("architecture inline figure missing:\n%s", out)
+	}
+	if !strings.Contains(out, "margin-thumb") || !strings.Contains(out, "/papers/p1/figures/f3/image") {
+		t.Fatalf("chart margin thumbnail missing:\n%s", out)
+	}
+}

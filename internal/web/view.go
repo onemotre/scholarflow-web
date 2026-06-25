@@ -34,10 +34,12 @@ type EvidenceNote struct {
 
 // FigureNote is one inline figure callout placed at a claim anchor.
 type FigureNote struct {
-	DOMID   string
-	Label   string
-	Page    *int
-	Caption string
+	DOMID    string
+	Label    string
+	Page     *int
+	Caption  string
+	HasImage bool
+	ImageURL string
 }
 
 // claimKey is the grouping/lookup key: the field name for scalar fields, or
@@ -80,20 +82,26 @@ func BuildPaperView(detail apiclient.PaperDetail) PaperView {
 		})
 	}
 
-	captionByLabel := make(map[string]string, len(detail.Figures))
+	figByLabel := make(map[string]apiclient.Figure, len(detail.Figures))
 	for _, f := range detail.Figures {
-		captionByLabel[normalizeLabel(f.Label)] = f.Caption
+		figByLabel[normalizeLabel(f.Label)] = f
 	}
 	view.FiguresByClaim = make(map[string][]FigureNote)
 	for _, f := range detail.Card.Figures {
 		id++
 		key := claimKey(f.ClaimKey, f.ClaimIndex)
-		view.FiguresByClaim[key] = append(view.FiguresByClaim[key], FigureNote{
-			DOMID:   fmt.Sprintf("fn-%d", id),
-			Label:   f.Label,
-			Page:    f.Page,
-			Caption: captionByLabel[normalizeLabel(f.Label)],
-		})
+		src := figByLabel[normalizeLabel(f.Label)]
+		note := FigureNote{
+			DOMID:    fmt.Sprintf("fn-%d", id),
+			Label:    f.Label,
+			Page:     f.Page,
+			Caption:  src.Caption,
+			HasImage: src.HasImage,
+		}
+		if src.HasImage {
+			note.ImageURL = "/papers/" + detail.PaperID + "/figures/" + src.ID + "/image"
+		}
+		view.FiguresByClaim[key] = append(view.FiguresByClaim[key], note)
 	}
 	return view
 }

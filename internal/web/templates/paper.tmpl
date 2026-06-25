@@ -26,7 +26,7 @@
     </tbody></table>{{end}}
   </div>{{end}}</section>{{end}}
   {{$impl := $card.Implementation}}{{if or $impl.Overview $impl.Modules}}<section><h2>实现</h2>
-  {{with $impl.Overview}}<p>{{.}}{{template "sidenotes" index $ev "implementation"}}{{template "figurenotes" index $figs "implementation"}}</p>{{end}}
+  {{with $impl.Overview}}<p>{{.}}{{template "sidenotes" index $ev "implementation"}}{{template "inlinefigures" index $figs "implementation"}}</p>{{end}}
   {{if $impl.Modules}}<ul class="card-list">
   {{range $i, $mod := $impl.Modules}}{{$key := printf "modules#%d" $i}}<li><strong>{{$mod.Name}}</strong>{{with $mod.Function}} — {{.}}{{end}}{{with $mod.Design}}<br><span class="mod-label">设计：</span>{{.}}{{end}}{{with $mod.Principle}}<br><span class="mod-label">原理：</span>{{.}}{{end}}{{template "sidenotes" index $ev $key}}{{template "figurenotes" index $figs $key}}</li>
   {{end}}</ul>{{end}}
@@ -39,4 +39,6 @@
 
 {{define "sidenotes"}}{{range $i, $e := .}}{{if $i}}<sup class="sidenote-comma">,</sup>{{end}}<label for="{{$e.DOMID}}" class="margin-toggle sidenote-number"></label><input type="checkbox" id="{{$e.DOMID}}" class="margin-toggle"/><span class="sidenote">{{if $e.SectionID}}[§{{$e.SectionID}}] {{end}}{{if $e.Page}}[p.{{$e.Page}}] {{end}}{{$e.Snippet}}</span>{{end}}{{end}}
 
-{{define "figurenotes"}}{{range $f := .}}<label for="{{$f.DOMID}}" class="margin-toggle figure-toggle">&#8853;</label><input type="checkbox" id="{{$f.DOMID}}" class="margin-toggle"/><span class="marginnote figure-callout"><strong>{{$f.Label}}</strong>{{if $f.Page}}（第 {{$f.Page}} 页）{{end}}{{if $f.Caption}}：{{$f.Caption}}{{end}}</span>{{end}}{{end}}
+{{define "figurenotes"}}{{range $f := .}}<label for="{{$f.DOMID}}" class="margin-toggle figure-toggle">&#8853;</label><input type="checkbox" id="{{$f.DOMID}}" class="margin-toggle"/><span class="marginnote figure-callout"><strong>{{$f.Label}}</strong>{{if $f.Page}}（第 {{$f.Page}} 页）{{end}}{{if $f.Caption}}：{{$f.Caption}}{{end}}{{if $f.HasImage}}<label class="thumb-toggle"><img class="margin-thumb" src="{{$f.ImageURL}}" alt="{{$f.Label}}"><input type="checkbox" class="lightbox-toggle"><span class="lightbox"><img src="{{$f.ImageURL}}" alt="{{$f.Label}}"></span></label>{{end}}</span>{{end}}{{end}}
+
+{{define "inlinefigures"}}{{range $f := .}}{{if $f.HasImage}}<figure class="inline-figure"><img src="{{$f.ImageURL}}" alt="{{$f.Label}}"><figcaption>{{$f.Label}}{{if $f.Page}}（第 {{$f.Page}} 页）{{end}}{{if $f.Caption}}：{{$f.Caption}}{{end}}</figcaption></figure>{{else}}<label for="{{$f.DOMID}}" class="margin-toggle figure-toggle">&#8853;</label><input type="checkbox" id="{{$f.DOMID}}" class="margin-toggle"/><span class="marginnote figure-callout"><strong>{{$f.Label}}</strong>{{if $f.Page}}（第 {{$f.Page}} 页）{{end}}{{if $f.Caption}}：{{$f.Caption}}{{end}}</span>{{end}}{{end}}{{end}}

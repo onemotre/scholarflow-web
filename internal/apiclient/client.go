@@ -176,3 +176,25 @@ func (c *Client) GetPaper(ctx context.Context, id string) (PaperDetail, error) {
 	}
 	return detail, nil
 }
+
+// GetFigureImage streams the API's figure-image endpoint. The caller must close
+// the returned reader. Returns ErrNotFound on 404.
+func (c *Client) GetFigureImage(ctx context.Context, paperID, figureID string) (io.ReadCloser, string, error) {
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, c.baseURL+"/v1/papers/"+paperID+"/figures/"+figureID+"/image", nil)
+	if err != nil {
+		return nil, "", err
+	}
+	resp, err := c.http.Do(req)
+	if err != nil {
+		return nil, "", err
+	}
+	if resp.StatusCode == http.StatusNotFound {
+		resp.Body.Close()
+		return nil, "", ErrNotFound
+	}
+	if resp.StatusCode >= 300 {
+		resp.Body.Close()
+		return nil, "", fmt.Errorf("backend figure image returned %d", resp.StatusCode)
+	}
+	return resp.Body, resp.Header.Get("Content-Type"), nil
+}

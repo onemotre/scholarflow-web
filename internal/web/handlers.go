@@ -3,6 +3,7 @@ package web
 import (
 	"context"
 	"errors"
+	"io"
 	"log"
 	"net/http"
 
@@ -14,6 +15,7 @@ import (
 type API interface {
 	ListPapers(ctx context.Context) ([]apiclient.PaperSummary, error)
 	GetPaper(ctx context.Context, id string) (apiclient.PaperDetail, error)
+	GetFigureImage(ctx context.Context, paperID, figureID string) (io.ReadCloser, string, error)
 }
 
 type Handler struct {
@@ -52,6 +54,26 @@ func (h *Handler) Paper(w http.ResponseWriter, r *http.Request) {
 	if err := Render(w, "paper.tmpl", view); err != nil {
 		log.Printf("render paper: %v", err)
 	}
+}
+
+func (h *Handler) FigureImage(w http.ResponseWriter, r *http.Request) {
+	paperID := chi.URLParam(r, "id")
+	figureID := chi.URLParam(r, "figureId")
+	body, contentType, err := h.api.GetFigureImage(r.Context(), paperID, figureID)
+	if err != nil {
+		if errors.Is(err, apiclient.ErrNotFound) {
+			http.NotFound(w, r)
+			return
+		}
+		h.renderError(w, http.StatusBadGateway, "后端不可用", "无法获取图片。")
+		return
+	}
+	defer body.Close()
+	if contentType == "" {
+		contentType = "image/png"
+	}
+	w.Header().Set("Content-Type", contentType)
+	_, _ = io.Copy(w, body)
 }
 
 func (h *Handler) renderError(w http.ResponseWriter, status int, heading, message string) {

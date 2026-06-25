@@ -40,3 +40,12 @@ table.cmp th, table.cmp td { border-bottom: 1px solid #ddd; padding: 0.2rem 0.6r
 .outline-block { border: 1px dashed #cfc9b6; padding: 0.4rem 1rem; margin: 0.8rem 0; }
 .outline-list { margin: 0; }
 .outline-page { color: #999; font-size: 0.85rem; }
+/* --- figure images --- */
+.inline-figure { margin: 0.8rem 0; }
+.inline-figure img { max-width: 100%; border: 1px solid #ddd; }
+.inline-figure figcaption { font-size: 0.85rem; color: #777; margin-top: 0.3rem; }
+.margin-thumb { display: block; max-width: 100%; margin-top: 0.3rem; border: 1px solid #ddd; cursor: zoom-in; }
+.lightbox-toggle { display: none; }
+.lightbox { display: none; }
+.lightbox-toggle:checked ~ .lightbox { display: flex; position: fixed; inset: 0; background: rgba(0,0,0,0.8); align-items: center; justify-content: center; z-index: 50; cursor: zoom-out; }
+.lightbox img { max-width: 92%; max-height: 92%; border: none; }
