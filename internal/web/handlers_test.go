@@ -2,6 +2,7 @@ package web
 
 import (
 	"context"
+	"io"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -17,6 +18,9 @@ type fakeAPI struct {
 	detail    apiclient.PaperDetail
 	listErr   error
 	getErr    error
+	imgBody   string
+	imgType   string
+	imgErr    error
 }
 
 func (f *fakeAPI) ListPapers(ctx context.Context) ([]apiclient.PaperSummary, error) {
@@ -25,12 +29,19 @@ func (f *fakeAPI) ListPapers(ctx context.Context) ([]apiclient.PaperSummary, err
 func (f *fakeAPI) GetPaper(ctx context.Context, id string) (apiclient.PaperDetail, error) {
 	return f.detail, f.getErr
 }
+func (f *fakeAPI) GetFigureImage(ctx context.Context, paperID, figureID string) (io.ReadCloser, string, error) {
+	if f.imgErr != nil {
+		return nil, "", f.imgErr
+	}
+	return io.NopCloser(strings.NewReader(f.imgBody)), f.imgType, nil
+}
 
 func routerFor(api API) http.Handler {
 	r := chi.NewRouter()
 	h := NewHandler(api)
 	r.Get("/", h.Collection)
 	r.Get("/papers/{id}", h.Paper)
+	r.Get("/papers/{id}/figures/{figureId}/image", h.FigureImage)
 	return r
 }
 
@@ -48,12 +59,12 @@ func TestPaperRendersCard(t *testing.T) {
 	rr := httptest.NewRecorder()
 	routerFor(&fakeAPI{detail: apiclient.PaperDetail{
 		PaperID: "p1", Status: "completed", UploadedFilename: "a.pdf",
-		Card: &apiclient.Card{Method: "方法X", Evidence: []apiclient.Evidence{{ClaimKey: "method", SectionID: "3", Snippet: "片段"}}},
+		Card: &apiclient.Card{Introduction: "引言X", Evidence: []apiclient.Evidence{{ClaimKey: "introduction", SectionID: "3", Snippet: "片段"}}},
 	}}).ServeHTTP(rr, httptest.NewRequest(http.MethodGet, "/papers/p1", nil))
 	if rr.Code != http.StatusOK {
 		t.Fatalf("code=%d", rr.Code)
 	}
-	for _, want := range []string{"方法X", "sidenote", "片段"} {
+	for _, want := range []string{"引言X", "sidenote", "片段"} {
 		if !strings.Contains(rr.Body.String(), want) {
 			t.Fatalf("missing %q", want)
 		}
@@ -84,5 +95,29 @@ func TestCollectionBackendError(t *testing.T) {
 		ServeHTTP(rr, httptest.NewRequest(http.MethodGet, "/", nil))
 	if rr.Code != http.StatusBadGateway {
 		t.Fatalf("code=%d, want 502", rr.Code)
+	}
+}
+
+func TestFigureImageProxies(t *testing.T) {
+	rr := httptest.NewRecorder()
+	routerFor(&fakeAPI{imgBody: "PNGBYTES", imgType: "image/png"}).
+		ServeHTTP(rr, httptest.NewRequest(http.MethodGet, "/papers/p1/figures/f2/image", nil))
+	if rr.Code != http.StatusOK {
+		t.Fatalf("code = %d", rr.Code)
+	}
+	if ct := rr.Header().Get("Content-Type"); ct != "image/png" {
+		t.Fatalf("content-type = %q", ct)
+	}
+	if rr.Body.String() != "PNGBYTES" {
+		t.Fatalf("body = %q", rr.Body.String())
+	}
+}
+
+func TestFigureImageNotFound(t *testing.T) {
+	rr := httptest.NewRecorder()
+	routerFor(&fakeAPI{imgErr: apiclient.ErrNotFound}).
+		ServeHTTP(rr, httptest.NewRequest(http.MethodGet, "/papers/p1/figures/missing/image", nil))
+	if rr.Code != http.StatusNotFound {
+		t.Fatalf("code = %d, want 404", rr.Code)
 	}
 }

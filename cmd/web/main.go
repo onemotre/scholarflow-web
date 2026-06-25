@@ -22,6 +22,7 @@ func main() {
 	r.Get("/healthz", func(w http.ResponseWriter, r *http.Request) { _, _ = w.Write([]byte("ok")) })
 	r.Get("/", h.Collection)
 	r.Get("/papers/{id}", h.Paper)
+	r.Get("/papers/{id}/figures/{figureId}/image", h.FigureImage)
 	r.Handle("/static/*", http.StripPrefix("/static/", http.FileServer(http.FS(web.StaticFS()))))
 
 	log.Printf("starting web on %s api=%s", addr, apiURL)

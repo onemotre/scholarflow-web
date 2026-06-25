@@ -20,3 +20,32 @@ body { font-family: Charter, Georgia, "Noto Serif CJK SC", "Source Han Serif SC"
 .figure-callout { font-size: 0.85rem; }
 /* Holds any list-field notes that had no bullet index, kept out of the heading. */
 .claim-extra { margin-top: 0.2rem; }
+/* --- v3 reading sections --- */
+.meth-problem { color: #555; }
+.meth-arrow { color: #999; }
+.meth-method { font-weight: 600; }
+.result { margin: 0.6rem 0 1rem; }
+.result-metric { margin: 0; }
+.badge-self { font-family: sans-serif; font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.05em; padding: 0.05rem 0.35rem; border: 1px solid #9a6700; color: #9a6700; border-radius: 0.2rem; }
+table.cmp { border-collapse: collapse; font-size: 0.9rem; margin-top: 0.3rem; }
+table.cmp th, table.cmp td { border-bottom: 1px solid #ddd; padding: 0.2rem 0.6rem 0.2rem 0; text-align: left; }
+.mod-label { color: #666; font-size: 0.85rem; }
+/* Demand 4: clamp each comment to one line (number + [§]/[p.] lead the line and
+   stay visible); expand to full text on hover. */
+.sidenote { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.sidenote:hover { white-space: normal; overflow: visible; }
+/* --- abstract & outline blocks --- */
+.block-label { display: block; font-family: sans-serif; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.05em; color: #666; margin-bottom: 0.2rem; }
+.abstract-block { background: #f6f4ec; border-left: 3px solid #b0a98f; padding: 0.6rem 1rem; margin: 0.8rem 0; }
+.outline-block { border: 1px dashed #cfc9b6; padding: 0.4rem 1rem; margin: 0.8rem 0; }
+.outline-list { margin: 0; }
+.outline-page { color: #999; font-size: 0.85rem; }
+/* --- figure images --- */
+.inline-figure { margin: 0.8rem 0; }
+.inline-figure img { max-width: 100%; border: 1px solid #ddd; }
+.inline-figure figcaption { font-size: 0.85rem; color: #777; margin-top: 0.3rem; }
+.margin-thumb { display: block; max-width: 100%; margin-top: 0.3rem; border: 1px solid #ddd; cursor: zoom-in; }
+.lightbox-toggle { display: none; }
+.lightbox { display: none; }
+.lightbox-toggle:checked ~ .lightbox { display: flex; position: fixed; inset: 0; background: rgba(0,0,0,0.8); align-items: center; justify-content: center; z-index: 50; cursor: zoom-out; }
+.lightbox img { max-width: 92%; max-height: 92%; border: none; }
