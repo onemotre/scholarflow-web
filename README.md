@@ -8,6 +8,16 @@
 - 证据片段以 Tufte 风格边注形式展示，便于追溯结论来源
 - 展示当前后端任务状态
 
+## ✨ 效果展示
+
+![content](./pics/main_content.png)
+
+![overview](./pics/overview.png)
+
+![overview-light](./pics/overview-light.png)
+
+![implement](./pics/implement.png)
+
 ## 📁 目录结构
 
 ```text
