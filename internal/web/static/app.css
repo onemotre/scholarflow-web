@@ -1,75 +1,101 @@
-/* Override Tufte's Latin-only ET-Book with a serif + CJK fallback stack so
-   Chinese cards read well. Loaded after tufte.css. */
-html { font-size: 15px; }
-body { font-family: Charter, Georgia, "Noto Serif CJK SC", "Source Han Serif SC", "Songti SC", "SimSun", serif; }
-.status-badge { font-family: sans-serif; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.05em; padding: 0.1rem 0.4rem; border: 1px solid currentColor; border-radius: 0.2rem; }
-.status-completed { color: #1a7f37; }
-.status-failed { color: #b42318; }
-.status-reading, .status-processing, .status-parsed, .status-queued { color: #9a6700; }
-.paper-list { list-style: none; padding-left: 0; }
-.paper-list li { margin: 0.8rem 0; }
-.paper-list a { font-weight: 600; }
-.paper-meta { color: #666; font-size: 0.85rem; }
-/* Align list-based sections (methodology / modules / links) with the left edge
-   of the paragraph sections; Tufte indents section > ul by ~5%, which made the
-   subheading sections' text column start noticeably further right. */
-.card-list { margin-top: 0.3rem; padding-left: 0; list-style: none; }
-.card-list > li { margin-bottom: 0.5rem; }
-.notice { background: #fff8e1; border-left: 3px solid #9a6700; padding: 0.6rem 1rem; }
-/* Comma between adjacent sidenote/citation markers (Tufte counters otherwise
-   butt the superscript numbers together). */
-.sidenote-comma { vertical-align: super; font-size: 0.7rem; font-feature-settings: "sups"; }
-/* Inline figure callout shown in the margin at its claim anchor. */
-.figure-callout strong { font-style: normal; }
-.figure-callout { font-size: 0.85rem; }
-/* Holds any list-field notes that had no bullet index, kept out of the heading. */
-.claim-extra { margin-top: 0.2rem; }
-/* --- v3 reading sections --- */
-.meth-problem { color: #555; }
-.meth-arrow { color: #999; }
-.meth-method { font-weight: 600; }
-/* Match Tufte's text-column width (section > p is 55%); without this the
-   div-wrapped results block stretches full width and looks wider than siblings. */
-.result { margin: 0.6rem 0 1rem; width: 55%; }
-@media (max-width: 760px) { .result { width: 90%; } }
-.result-metric { margin: 0; }
-.badge-self { font-family: sans-serif; font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.05em; padding: 0.05rem 0.35rem; border: 1px solid #9a6700; color: #9a6700; border-radius: 0.2rem; }
-table.cmp { border-collapse: collapse; font-size: 0.9rem; margin-top: 0.3rem; }
-table.cmp th, table.cmp td { border-bottom: 1px solid #ddd; padding: 0.2rem 0.6rem 0.2rem 0; text-align: left; }
-.mod-label { color: #666; font-size: 0.85rem; }
-/* Demand 4: clamp each comment to one line (number + [§]/[p.] lead the line and
-   stay visible); expand to full text on hover. */
-.sidenote { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.sidenote:hover { white-space: normal; overflow: visible; }
-/* Figure callouts collapse their label/caption to one line like comments, and
-   expand on hover; the thumbnail (if any) stays below. */
-.figure-cap { display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.figure-cap:hover { white-space: normal; overflow: visible; }
-/* --- abstract & outline blocks --- */
-.block-label { display: block; font-family: sans-serif; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.05em; color: #666; margin-bottom: 0.2rem; }
-.abstract-block { background: #f6f4ec; border-left: 3px solid #b0a98f; padding: 0.6rem 1rem; margin: 0.8rem 0; }
-.outline-block { border: 1px dashed #cfc9b6; padding: 0.4rem 1rem; margin: 0.8rem 0; }
-.outline-list { margin: 0; list-style: none; padding-left: 0; }
-.outline-item { line-height: 1.55; }
-.outline-num { color: #666; font-variant-numeric: tabular-nums; }
-.outline-l0 { margin-left: 0; font-weight: 600; }
-.outline-l1 { margin-left: 1.2rem; }
-.outline-l2 { margin-left: 2.4rem; }
-.outline-l3 { margin-left: 3.6rem; }
-.outline-l4 { margin-left: 4.8rem; }
-.outline-l5 { margin-left: 6rem; }
-.outline-l6 { margin-left: 7.2rem; }
-.outline-page { color: #999; font-size: 0.85rem; }
-/* --- figure images --- */
-.inline-figure { margin: 0.8rem 0; max-width: 100%; }
-.inline-figure img { display: block; max-width: 100%; border: 1px solid #ddd; }
-/* Override Tufte's float-right margin caption: keep the architecture caption
-   directly below the image at full text width. */
-.inline-figure figcaption { float: none; clear: both; width: auto; max-width: 100%; margin: 0.4rem 0 0 0; font-size: 0.85rem; line-height: 1.5; color: #777; }
-/* Cap the margin thumbnail so tall figures don't overflow the gutter; the
-   pure-CSS lightbox still shows it full-size on click. */
-.margin-thumb { display: block; max-width: 100%; max-height: 9rem; width: auto; object-fit: contain; margin-top: 0.3rem; border: 1px solid #ddd; cursor: zoom-in; }
-.lightbox-toggle { display: none; }
-.lightbox { display: none; }
-.lightbox-toggle:checked ~ .lightbox { display: flex; position: fixed; inset: 0; background: rgba(0,0,0,0.8); align-items: center; justify-content: center; z-index: 50; cursor: zoom-out; }
-.lightbox img { max-width: 92%; max-height: 92%; border: none; }
+/* ScholarFlow viewer — "Editorial" layout. Theme follows the OS via
+   prefers-color-scheme (the only JS is self-hosted KaTeX for math). Two-column
+   claims use CSS grid so evidence aligns beside its claim and images never
+   overflow. */
+:root{
+  --bg:#fcfcfd; --surface:#f4f4f8; --fg:#23232b; --muted:#6b6b78;
+  --rule:#e3e3ec; --accent:#5b4bd6; --accent-ink:#4636c0;
+  --hl-bg:rgba(91,75,214,.12); --hl-line:#5b4bd6;
+  --ok:#1a7f37; --warn:#9a6700; --err:#b42318;
+  --note-w:18rem; --gap:2.4rem; --content:42rem;
+}
+@media (prefers-color-scheme:dark){
+  :root{ --bg:#15151b; --surface:#1e1e27; --fg:#e8e8f0; --muted:#a0a0b0;
+    --rule:#2c2c39; --accent:#a99bff; --accent-ink:#c3b8ff;
+    --hl-bg:rgba(169,155,255,.20); --hl-line:#a99bff;
+    --ok:#4ac776; --warn:#d8a93a; --err:#ff7b6b; }
+}
+*{box-sizing:border-box}
+html{color-scheme:light dark}
+body{margin:0;background:var(--bg);color:var(--fg);
+  font-family:-apple-system,system-ui,"Segoe UI","Noto Sans CJK SC","Source Han Sans SC",sans-serif;
+  font-size:16px;line-height:1.7}
+img{max-width:100%;height:auto;display:block}
+a{color:var(--accent-ink)}
+h1,h2,.paper-title{font-family:Georgia,"Songti SC","Noto Serif CJK SC",serif}
+
+.paper{max-width:calc(var(--content) + var(--note-w) + var(--gap));margin:0 auto;padding:2rem 1.5rem 6rem}
+h1{font-size:2rem;line-height:1.2;margin:.4rem 0 .2rem;letter-spacing:-.01em}
+.subtitle{color:var(--muted);margin:.3rem 0 1.4rem}
+.block-label{display:block;font-size:.68rem;letter-spacing:.12em;text-transform:uppercase;color:var(--accent-ink);margin-bottom:.35rem}
+
+/* collection + error pages */
+.paper-list{list-style:none;padding:0}
+.paper-list li{margin:.9rem 0}
+.paper-list a{font-weight:600;text-decoration:none}
+.paper-meta{color:var(--muted);font-size:.85rem;margin-top:.15rem}
+.status-badge{font-size:.66rem;text-transform:uppercase;letter-spacing:.05em;padding:.08rem .45rem;border:1px solid currentColor;border-radius:.3rem;margin-left:.4rem}
+.status-completed{color:var(--ok)} .status-failed{color:var(--err)}
+.status-reading,.status-processing,.status-parsed,.status-queued{color:var(--warn)}
+.notice{background:var(--surface);border-left:3px solid var(--warn);padding:.6rem 1rem;border-radius:.3rem}
+
+/* abstract + outline */
+.abstract-block{border-top:2px solid var(--accent);padding:.9rem 0 0;margin:0 0 1.6rem}
+.outline-block{margin:0 0 2rem}
+.outline-list{list-style:none;margin:0;padding:0;columns:2;column-gap:2rem}
+.outline-item{padding:.12rem 0;break-inside:avoid}
+.outline-num{color:var(--accent-ink);font-variant-numeric:tabular-nums;margin-right:.35rem}
+.outline-page{color:var(--muted);font-size:.8rem}
+.outline-l0{font-weight:700}
+.outline-l1{margin-left:1.2rem} .outline-l2{margin-left:2.4rem} .outline-l3{margin-left:3.6rem}
+.outline-l4{margin-left:4.8rem} .outline-l5{margin-left:6rem} .outline-l6{margin-left:7.2rem}
+
+h2{font-size:1.4rem;margin:2.4rem 0 .8rem}
+
+/* claim grid: body | evidence notes, aligned, never overflowing */
+.claim{display:grid;grid-template-columns:minmax(0,1fr) var(--note-w);gap:var(--gap);align-items:start;margin:1.2rem 0}
+.claim-body{min-width:0}
+.claim-body p{margin:.3rem 0}
+.claim-notes{min-width:0;border-left:2px solid var(--rule);padding-left:1.2rem}
+.note{font-size:.84rem;line-height:1.55;color:var(--muted);margin-bottom:.8rem}
+.marker{display:inline-block;font-size:.64rem;font-weight:700;letter-spacing:.03em;padding:.05rem .4rem;margin-right:.25rem;border-radius:.25rem;color:var(--accent-ink);border:1px solid var(--accent)}
+.snip{color:var(--fg)}
+.figure-note{margin:.5rem 0 .9rem}
+.figure-note .thumb{border-radius:.5rem;box-shadow:0 1px 4px rgba(0,0,0,.18);max-height:14rem;width:auto}
+.figure-note figcaption{font-size:.76rem;color:var(--muted);margin-top:.3rem}
+.figure-inline{margin:1rem 0}
+.figure-inline .thumb{border-radius:.6rem;box-shadow:0 2px 10px rgba(0,0,0,.2)}
+.figure-inline figcaption{font-size:.84rem;color:var(--muted);margin-top:.5rem;line-height:1.55;border-left:2px solid var(--accent);padding-left:.7rem}
+
+/* collapsible caption: clamp to two lines, expand on hover */
+.cap-collapsible{display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;line-clamp:2;overflow:hidden;cursor:zoom-in}
+.cap-collapsible:hover{-webkit-line-clamp:99;line-clamp:99}
+
+/* click-to-enlarge: pure-CSS full-screen overlay */
+.thumb-zoom{display:block;cursor:zoom-in}
+.thumb-zoom .lightbox-toggle{position:absolute;width:0;height:0;opacity:0}
+.lightbox{display:none}
+.lightbox-toggle:checked ~ .lightbox{display:flex;position:fixed;inset:0;z-index:50;
+  background:rgba(0,0,0,.85);align-items:center;justify-content:center;padding:2rem;cursor:zoom-out}
+.lightbox img{max-width:92vw;max-height:92vh;width:auto;border-radius:.4rem;box-shadow:none}
+
+/* card pieces */
+.cmp{border-collapse:collapse;font-size:.9rem;margin:.5rem 0}
+.cmp th{color:var(--muted);font-weight:600}
+.cmp th,.cmp td{border-bottom:1px solid var(--rule);padding:.3rem .8rem .3rem 0;text-align:left}
+.meth-problem{color:var(--muted)} .meth-arrow{color:var(--accent)} .meth-method{font-weight:600}
+.mod-label{color:var(--muted);font-size:.85rem}
+.result-metric{margin:.2rem 0}
+.badge-self{font-size:.62rem;text-transform:uppercase;letter-spacing:.05em;padding:.05rem .4rem;border-radius:.25rem;border:1px solid var(--accent);color:var(--accent-ink)}
+.card-list{list-style:none;padding:0;margin:.3rem 0}
+
+/* KaTeX: keep wide display equations scrollable instead of overflowing. */
+.katex-display{overflow-x:auto;overflow-y:hidden;padding:.2rem 0;margin:.6rem 0}
+.katex{font-size:1.05em}
+
+@media (max-width:840px){
+  .outline-list{columns:1}
+  .claim{grid-template-columns:1fr;gap:.7rem}
+  .claim-notes{border-left:0;border-top:2px solid var(--rule);padding:.6rem 0 0}
+  .figure-note .thumb{max-height:none}
+}

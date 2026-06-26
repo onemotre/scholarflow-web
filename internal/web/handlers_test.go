@@ -64,7 +64,7 @@ func TestPaperRendersCard(t *testing.T) {
 	if rr.Code != http.StatusOK {
 		t.Fatalf("code=%d", rr.Code)
 	}
-	for _, want := range []string{"引言X", "sidenote", "片段"} {
+	for _, want := range []string{"引言X", "claim-notes", "片段"} {
 		if !strings.Contains(rr.Body.String(), want) {
 			t.Fatalf("missing %q", want)
 		}

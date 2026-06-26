@@ -33,21 +33,20 @@ func TestBuildPaperViewGroupsByCompositeClaim(t *testing.T) {
 	if len(figs) != 1 || figs[0].Caption != "结构图" || figs[0].Page == nil || *figs[0].Page != 3 {
 		t.Fatalf("results#0 figures = %#v", figs)
 	}
-	seen := map[string]bool{}
-	for _, notes := range view.EvidenceByClaim {
-		for _, n := range notes {
-			if seen[n.DOMID] {
-				t.Fatalf("duplicate DOM id %q", n.DOMID)
-			}
-			seen[n.DOMID] = true
-		}
+}
+
+func TestBaseUsesEditorialStylesheetAndKatex(t *testing.T) {
+	var b strings.Builder
+	if err := Render(&b, "collection.tmpl", []apiclient.PaperSummary(nil)); err != nil {
+		t.Fatalf("render: %v", err)
 	}
-	for _, notes := range view.FiguresByClaim {
-		for _, n := range notes {
-			if seen[n.DOMID] {
-				t.Fatalf("duplicate DOM id %q", n.DOMID)
-			}
-			seen[n.DOMID] = true
+	out := b.String()
+	if strings.Contains(out, "tufte.css") {
+		t.Fatalf("base still links tufte.css:\n%s", out)
+	}
+	for _, want := range []string{"/static/app.css", `class="paper"`, "katex.min.css", "katex-init.js"} {
+		if !strings.Contains(out, want) {
+			t.Fatalf("base missing %q:\n%s", want, out)
 		}
 	}
 }
@@ -94,12 +93,16 @@ func TestRenderPaperV3Sections(t *testing.T) {
 	for _, want := range []string{
 		"本文研究 X", "稀疏", "门控", "准确率", "提升4分", "仅自测",
 		"BaseX", "80%", "[12]", "整体设计", "编码器", "E=mc^2",
-		// comment keeps both section and page, plus snippet:
-		"[§3]", "[p.7]", "证据A", "sidenote",
+		// claim grid with aligned evidence column:
+		`class="claim"`, `class="claim-body"`, `class="claim-notes"`,
+		`class="note"`, `class="marker"`, "§3", "p.7", "证据A",
 	} {
 		if !strings.Contains(out, want) {
 			t.Fatalf("paper missing %q in:\n%s", want, out)
 		}
+	}
+	if strings.Contains(out, "margin-toggle") || strings.Contains(out, "sidenote") {
+		t.Fatalf("old Tufte markup still present:\n%s", out)
 	}
 }
 
@@ -227,11 +230,12 @@ func TestRenderPaperFigureImages(t *testing.T) {
 		t.Fatalf("render: %v", err)
 	}
 	out := b.String()
-	// Architecture figure renders inline; chart figure renders as a margin thumbnail.
-	if !strings.Contains(out, `class="inline-figure"`) || !strings.Contains(out, "/papers/p1/figures/f1/image") {
+	// Architecture figure renders inline in the body; chart figure renders in the
+	// claim's notes column.
+	if !strings.Contains(out, `class="figure-inline"`) || !strings.Contains(out, "/papers/p1/figures/f1/image") {
 		t.Fatalf("architecture inline figure missing:\n%s", out)
 	}
-	if !strings.Contains(out, "margin-thumb") || !strings.Contains(out, "/papers/p1/figures/f3/image") {
-		t.Fatalf("chart margin thumbnail missing:\n%s", out)
+	if !strings.Contains(out, `class="figure-note"`) || !strings.Contains(out, "/papers/p1/figures/f3/image") {
+		t.Fatalf("chart figure note missing:\n%s", out)
 	}
 }

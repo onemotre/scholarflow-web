@@ -27,18 +27,15 @@ type PaperView struct {
 	FiguresByClaim  map[string][]FigureNote
 }
 
-// EvidenceNote is one rendered sidenote. DOMID is unique across the page so the
-// Tufte checkbox toggles don't collide between bullets that share a claim key.
+// EvidenceNote is one rendered evidence note in a claim's notes column.
 type EvidenceNote struct {
-	DOMID     string
 	Page      *int
 	SectionID string
 	Snippet   string
 }
 
-// FigureNote is one inline figure callout placed at a claim anchor.
+// FigureNote is one figure placed at a claim anchor.
 type FigureNote struct {
-	DOMID    string
 	Label    string
 	Page     *int
 	Caption  string
@@ -87,13 +84,10 @@ func BuildPaperView(detail apiclient.PaperDetail) PaperView {
 		return view
 	}
 
-	id := 0
 	view.EvidenceByClaim = make(map[string][]EvidenceNote)
 	for _, e := range detail.Card.Evidence {
-		id++
 		key := claimKey(e.ClaimKey, e.ClaimIndex)
 		view.EvidenceByClaim[key] = append(view.EvidenceByClaim[key], EvidenceNote{
-			DOMID:     fmt.Sprintf("sn-%d", id),
 			Page:      e.Page,
 			SectionID: e.SectionID,
 			Snippet:   e.Snippet,
@@ -106,11 +100,9 @@ func BuildPaperView(detail apiclient.PaperDetail) PaperView {
 	}
 	view.FiguresByClaim = make(map[string][]FigureNote)
 	for _, f := range detail.Card.Figures {
-		id++
 		key := claimKey(f.ClaimKey, f.ClaimIndex)
 		src := figByLabel[normalizeLabel(f.Label)]
 		note := FigureNote{
-			DOMID:    fmt.Sprintf("fn-%d", id),
 			Label:    f.Label,
 			Page:     f.Page,
 			Caption:  trimLabelPrefix(src.Caption, f.Label),

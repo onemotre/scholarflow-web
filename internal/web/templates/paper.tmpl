@@ -13,32 +13,31 @@
 {{if .Outline}}<nav class="outline-block"><span class="block-label">目录 / Outline</span><ul class="outline-list">{{range .Outline}}<li class="outline-item outline-l{{.Level}}">{{if .Number}}<span class="outline-num">{{.Number}}</span> {{end}}{{.Heading}}{{if .Page}} <span class="outline-page">p.{{.Page}}</span>{{end}}</li>{{end}}</ul></nav>{{end}}
 {{if .Detail.Card}}
   {{$card := .Detail.Card}}
-  {{with $card.Introduction}}<section><h2>引言</h2><p>{{.}}{{template "sidenotes" index $ev "introduction"}}{{template "figurenotes" index $figs "introduction"}}</p></section>{{end}}
-  {{with $card.RelatedWork}}<section><h2>相关工作</h2><p>{{.}}{{template "sidenotes" index $ev "related_work"}}{{template "figurenotes" index $figs "related_work"}}</p></section>{{end}}
-  {{if $card.Methodology}}<section><h2>方法</h2><ul class="card-list">
-  {{range $i, $m := $card.Methodology}}<li><span class="meth-problem">{{$m.Problem}}</span> <span class="meth-arrow">→</span> <span class="meth-method">{{$m.Method}}</span>{{$key := printf "methodology#%d" $i}}{{template "sidenotes" index $ev $key}}{{template "figurenotes" index $figs $key}}</li>
-  {{end}}</ul></section>{{end}}
+  {{with $card.Introduction}}<section><h2>引言</h2><div class="claim"><div class="claim-body"><p>{{.}}</p></div>{{template "claimnotes" (dict "ev" (index $ev "introduction") "figs" (index $figs "introduction"))}}</div></section>{{end}}
+  {{with $card.RelatedWork}}<section><h2>相关工作</h2><div class="claim"><div class="claim-body"><p>{{.}}</p></div>{{template "claimnotes" (dict "ev" (index $ev "related_work") "figs" (index $figs "related_work"))}}</div></section>{{end}}
+  {{if $card.Methodology}}<section><h2>方法</h2>
+  {{range $i, $m := $card.Methodology}}{{$key := printf "methodology#%d" $i}}<div class="claim"><div class="claim-body"><p><span class="meth-problem">{{$m.Problem}}</span> <span class="meth-arrow">→</span> <span class="meth-method">{{$m.Method}}</span></p></div>{{template "claimnotes" (dict "ev" (index $ev $key) "figs" (index $figs $key))}}</div>
+  {{end}}</section>{{end}}
   {{if $card.Results}}<section><h2>结果</h2>
-  {{range $i, $r := $card.Results}}{{$key := printf "results#%d" $i}}<div class="result">
-    <p class="result-metric"><strong>{{$r.Metric}}</strong>{{if $r.SelfOnly}} <span class="badge-self">仅自测</span>{{end}}{{with $r.Finding}}：{{.}}{{end}}{{template "sidenotes" index $ev $key}}{{template "figurenotes" index $figs $key}}</p>
+  {{range $i, $r := $card.Results}}{{$key := printf "results#%d" $i}}<div class="claim"><div class="claim-body">
+    <p class="result-metric"><strong>{{$r.Metric}}</strong>{{if $r.SelfOnly}} <span class="badge-self">仅自测</span>{{end}}{{with $r.Finding}}：{{.}}{{end}}</p>
     {{if $r.Comparisons}}<table class="cmp"><thead><tr><th>对比方法</th><th>数值</th><th>引用</th></tr></thead><tbody>
     {{range $c := $r.Comparisons}}<tr><td>{{$c.Work}}</td><td>{{$c.Value}}</td><td>{{$c.Reference}}</td></tr>{{end}}
     </tbody></table>{{end}}
-  </div>{{end}}</section>{{end}}
+  </div>{{template "claimnotes" (dict "ev" (index $ev $key) "figs" (index $figs $key))}}</div>{{end}}</section>{{end}}
   {{$impl := $card.Implementation}}{{if or $impl.Overview $impl.Modules}}<section><h2>实现</h2>
-  {{with $impl.Overview}}<p>{{.}}{{template "sidenotes" index $ev "implementation"}}</p>{{end}}{{template "inlinefigures" index $figs "implementation"}}
-  {{if $impl.Modules}}<ul class="card-list">
-  {{range $i, $mod := $impl.Modules}}{{$key := printf "modules#%d" $i}}<li><strong>{{$mod.Name}}</strong>{{with $mod.Function}} — {{.}}{{end}}{{with $mod.Design}}<br><span class="mod-label">设计：</span>{{.}}{{end}}{{with $mod.Principle}}<br><span class="mod-label">原理：</span>{{.}}{{end}}{{template "sidenotes" index $ev $key}}{{template "figurenotes" index $figs $key}}</li>
-  {{end}}</ul>{{end}}
-  </section>{{end}}
+  {{if $impl.Overview}}<div class="claim"><div class="claim-body"><p>{{$impl.Overview}}</p>{{template "inlinefigures" index $figs "implementation"}}</div>{{template "claimnotes" (dict "ev" (index $ev "implementation") "figs" nil)}}</div>{{end}}
+  {{range $i, $mod := $impl.Modules}}{{$key := printf "modules#%d" $i}}<div class="claim"><div class="claim-body"><p><strong>{{$mod.Name}}</strong>{{with $mod.Function}} — {{.}}{{end}}{{with $mod.Design}}<br><span class="mod-label">设计：</span>{{.}}{{end}}{{with $mod.Principle}}<br><span class="mod-label">原理：</span>{{.}}{{end}}</p></div>{{template "claimnotes" (dict "ev" (index $ev $key) "figs" (index $figs $key))}}</div>
+  {{end}}</section>{{end}}
   {{if or $card.CodeLinks $card.DataLinks}}<section><h2>链接</h2><ul class="card-list">{{range $card.CodeLinks}}<li><a href="{{.}}">{{.}}</a></li>{{end}}{{range $card.DataLinks}}<li><a href="{{.}}">{{.}}</a></li>{{end}}</ul></section>{{end}}
 {{else}}
   <p class="notice">阅读尚未完成（状态：{{.Detail.Status}}）。</p>
 {{end}}
 {{end}}
 
-{{define "sidenotes"}}{{range $i, $e := .}}{{if $i}}<sup class="sidenote-comma">,</sup>{{end}}<label for="{{$e.DOMID}}" class="margin-toggle sidenote-number"></label><input type="checkbox" id="{{$e.DOMID}}" class="margin-toggle"/><span class="sidenote">{{if $e.SectionID}}[§{{$e.SectionID}}] {{end}}{{if $e.Page}}[p.{{$e.Page}}] {{end}}{{$e.Snippet}}</span>{{end}}{{end}}
+{{define "claimnotes"}}{{if or .ev .figs}}<aside class="claim-notes">{{range .ev}}<div class="note">{{if .SectionID}}<span class="marker">§{{.SectionID}}</span>{{end}}{{if .Page}}<span class="marker">p.{{.Page}}</span>{{end}}<span class="snip">{{.Snippet}}</span></div>{{end}}{{range .figs}}{{if .HasImage}}<figure class="figure-note">{{template "zoomimg" .}}<figcaption class="cap-collapsible"><strong>{{.Label}}</strong>{{if .Page}}（第 {{.Page}} 页）{{end}}{{if .Caption}}：{{.Caption}}{{end}}</figcaption></figure>{{else}}<div class="note"><span class="marker">{{.Label}}</span>{{if .Page}}<span class="marker">p.{{.Page}}</span>{{end}}{{if .Caption}}<span class="snip cap-collapsible">{{.Caption}}</span>{{end}}</div>{{end}}{{end}}</aside>{{end}}{{end}}
 
-{{define "figurenotes"}}{{range $f := .}}<label for="{{$f.DOMID}}" class="margin-toggle figure-toggle">&#8853;</label><input type="checkbox" id="{{$f.DOMID}}" class="margin-toggle"/><span class="marginnote figure-callout"><span class="figure-cap"><strong>{{$f.Label}}</strong>{{if $f.Page}}（第 {{$f.Page}} 页）{{end}}{{if $f.Caption}}：{{$f.Caption}}{{end}}</span>{{if $f.HasImage}}<label class="thumb-toggle"><img class="margin-thumb" src="{{$f.ImageURL}}" alt="{{$f.Label}}"><input type="checkbox" class="lightbox-toggle"><span class="lightbox"><img src="{{$f.ImageURL}}" alt="{{$f.Label}}"></span></label>{{end}}</span>{{end}}{{end}}
+{{define "inlinefigures"}}{{range $f := .}}{{if $f.HasImage}}<figure class="figure-inline">{{template "zoomimg" $f}}<figcaption class="cap-collapsible"><strong>{{$f.Label}}</strong>{{if $f.Page}}（第 {{$f.Page}} 页）{{end}}{{if $f.Caption}}：{{$f.Caption}}{{end}}</figcaption></figure>{{else}}<div class="note"><span class="marker">{{$f.Label}}</span>{{if $f.Page}}<span class="marker">p.{{$f.Page}}</span>{{end}}{{if $f.Caption}}<span class="snip cap-collapsible">{{$f.Caption}}</span>{{end}}</div>{{end}}{{end}}{{end}}
 
-{{define "inlinefigures"}}{{range $f := .}}{{if $f.HasImage}}<figure class="inline-figure"><img src="{{$f.ImageURL}}" alt="{{$f.Label}}"><figcaption>{{$f.Label}}{{if $f.Page}}（第 {{$f.Page}} 页）{{end}}{{if $f.Caption}}：{{$f.Caption}}{{end}}</figcaption></figure>{{else}}<label for="{{$f.DOMID}}" class="margin-toggle figure-toggle">&#8853;</label><input type="checkbox" id="{{$f.DOMID}}" class="margin-toggle"/><span class="marginnote figure-callout"><span class="figure-cap"><strong>{{$f.Label}}</strong>{{if $f.Page}}（第 {{$f.Page}} 页）{{end}}{{if $f.Caption}}：{{$f.Caption}}{{end}}</span></span>{{end}}{{end}}{{end}}
+{{/* zoomimg: a thumbnail that enlarges to a full-screen overlay on click, pure CSS. */}}
+{{define "zoomimg"}}<label class="thumb-zoom"><input type="checkbox" class="lightbox-toggle"><img class="thumb" src="{{.ImageURL}}" alt="{{.Label}}"><span class="lightbox"><img src="{{.ImageURL}}" alt="{{.Label}}"></span></label>{{end}}
