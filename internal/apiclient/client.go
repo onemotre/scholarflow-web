@@ -42,6 +42,9 @@ type PaperSummary struct {
 	PublicationYear  *int32     `json:"publication_year,omitempty"`
 	UploadedFilename string     `json:"uploaded_filename"`
 	CreatedAt        *time.Time `json:"created_at,omitempty"`
+	SourceType       string     `json:"source_type"`
+	SourceID         *string    `json:"source_id,omitempty"`
+	PrimaryCategory  *string    `json:"primary_category,omitempty"`
 }
 
 type Author struct {
