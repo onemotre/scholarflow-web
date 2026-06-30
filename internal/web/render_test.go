@@ -37,7 +37,7 @@ func TestBuildPaperViewGroupsByCompositeClaim(t *testing.T) {
 
 func TestBaseUsesEditorialStylesheetAndKatex(t *testing.T) {
 	var b strings.Builder
-	if err := Render(&b, "collection.tmpl", []apiclient.PaperSummary(nil)); err != nil {
+	if err := Render(&b, "collection.tmpl", CollectionView{}); err != nil {
 		t.Fatalf("render: %v", err)
 	}
 	out := b.String()
@@ -54,14 +54,14 @@ func TestBaseUsesEditorialStylesheetAndKatex(t *testing.T) {
 func TestRenderCollection(t *testing.T) {
 	title := "深度学习论文"
 	var b strings.Builder
-	err := Render(&b, "collection.tmpl", []apiclient.PaperSummary{
-		{PaperID: "p1", Title: &title, Status: "completed", UploadedFilename: "a.pdf"},
-	})
-	if err != nil {
+	view := BuildCollectionView([]apiclient.PaperSummary{
+		{PaperID: "p1", Title: &title, Status: "completed", UploadedFilename: "a.pdf", SourceType: "arxiv"},
+	}, "arxiv", "date")
+	if err := Render(&b, "collection.tmpl", view); err != nil {
 		t.Fatalf("render: %v", err)
 	}
 	out := b.String()
-	for _, want := range []string{"深度学习论文", "/papers/p1", "status-completed"} {
+	for _, want := range []string{"深度学习论文", "/papers/p1", "status-completed", "已完成", "coll-tab", "按类别"} {
 		if !strings.Contains(out, want) {
 			t.Fatalf("collection missing %q in:\n%s", want, out)
 		}

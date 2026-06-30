@@ -2,17 +2,34 @@
 {{define "content"}}
 <h1>ScholarFlow</h1>
 <p class="subtitle">已采集与阅读的论文</p>
-{{if .}}
-<ul class="paper-list">
-{{range .}}
-  <li>
-    <a href="/papers/{{.PaperID}}">{{if .Title}}{{.Title}}{{else}}{{.UploadedFilename}}{{end}}</a>
-    <span class="status-badge status-{{.Status}}">{{.Status}}</span>
-    <div class="paper-meta">{{if .PublicationYear}}{{.PublicationYear}} · {{end}}{{.UploadedFilename}}</div>
-  </li>
+
+<nav class="coll-nav">
+  <a class="coll-tab{{if eq .Source "arxiv"}} active{{end}}" href="/?source=arxiv&group={{.Group}}">arXiv ({{.Counts.Arxiv}})</a>
+  <a class="coll-tab{{if eq .Source "local"}} active{{end}}" href="/?source=local&group={{.Group}}">本地上传 ({{.Counts.Local}})</a>
+</nav>
+
+<div class="coll-toggle">
+  <span>分组：</span>
+  <a class="{{if eq .Group "date"}}active{{end}}" href="/?source={{.Source}}&group=date">按日期</a>
+  <a class="{{if eq .Group "category"}}active{{end}}" href="/?source={{.Source}}&group=category">按类别</a>
+</div>
+
+{{if .Blocks}}
+{{range .Blocks}}
+<section class="coll-block">
+  <span class="block-label">{{.Label}} · {{len .Papers}}</span>
+  <ul class="paper-list">
+  {{range .Papers}}
+    <li>
+      <a href="/papers/{{.PaperID}}">{{.Title}}</a>
+      <span class="status-badge {{.StatusClass}}">{{.StatusLabel}}</span>
+      <div class="paper-meta">{{if .Year}}{{.Year}} · {{end}}{{.Filename}}</div>
+    </li>
+  {{end}}
+  </ul>
+</section>
 {{end}}
-</ul>
 {{else}}
-<p class="notice">还没有论文。先通过 API 上传一篇 PDF。</p>
+<p class="notice">这个来源下还没有论文。先通过 API 上传或采集一篇 PDF。</p>
 {{end}}
 {{end}}

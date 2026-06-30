@@ -32,8 +32,10 @@ func (h *Handler) Collection(w http.ResponseWriter, r *http.Request) {
 		h.renderError(w, http.StatusBadGateway, "后端不可用", "无法从 API 获取论文列表。")
 		return
 	}
+	q := r.URL.Query()
+	view := BuildCollectionView(summaries, q.Get("source"), q.Get("group"))
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
-	if err := Render(w, "collection.tmpl", summaries); err != nil {
+	if err := Render(w, "collection.tmpl", view); err != nil {
 		log.Printf("render collection: %v", err)
 	}
 }

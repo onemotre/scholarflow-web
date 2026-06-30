@@ -39,6 +39,16 @@ h1{font-size:2rem;line-height:1.2;margin:.4rem 0 .2rem;letter-spacing:-.01em}
 .status-reading,.status-processing,.status-parsed,.status-queued{color:var(--warn)}
 .notice{background:var(--surface);border-left:3px solid var(--warn);padding:.6rem 1rem;border-radius:.3rem}
 
+/* collection nav tabs + grouping toggle + blocks */
+.coll-nav{display:flex;gap:.3rem;border-bottom:1px solid var(--rule);margin:0 0 1rem}
+.coll-tab{text-decoration:none;font-weight:600;padding:.4rem .8rem;color:var(--muted);border-bottom:2px solid transparent;margin-bottom:-1px}
+.coll-tab.active{color:var(--accent-ink);border-bottom-color:var(--accent)}
+.coll-toggle{display:flex;align-items:center;gap:.4rem;font-size:.82rem;color:var(--muted);margin:0 0 1.8rem}
+.coll-toggle a{text-decoration:none;color:var(--muted);padding:.1rem .55rem;border:1px solid var(--rule);border-radius:.3rem}
+.coll-toggle a.active{color:var(--accent-ink);border-color:var(--accent)}
+.coll-block{margin:0 0 1.8rem}
+.coll-block .block-label{border-bottom:1px solid var(--rule);padding-bottom:.25rem;margin-bottom:.5rem}
+
 /* abstract + outline */
 .abstract-block{border-top:2px solid var(--accent);padding:.9rem 0 0;margin:0 0 1.6rem}
 .outline-block{margin:0 0 2rem}

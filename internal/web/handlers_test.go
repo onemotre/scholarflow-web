@@ -48,10 +48,23 @@ func routerFor(api API) http.Handler {
 func TestCollectionRendersRows(t *testing.T) {
 	title := "标题A"
 	rr := httptest.NewRecorder()
-	routerFor(&fakeAPI{summaries: []apiclient.PaperSummary{{PaperID: "p1", Title: &title, Status: "completed", UploadedFilename: "a.pdf"}}}).
+	routerFor(&fakeAPI{summaries: []apiclient.PaperSummary{{PaperID: "p1", Title: &title, Status: "completed", UploadedFilename: "a.pdf", SourceType: "arxiv"}}}).
 		ServeHTTP(rr, httptest.NewRequest(http.MethodGet, "/", nil))
 	if rr.Code != http.StatusOK || !strings.Contains(rr.Body.String(), "/papers/p1") {
 		t.Fatalf("code=%d body=%s", rr.Code, rr.Body.String())
+	}
+}
+
+func TestCollectionSourceFilter(t *testing.T) {
+	title := "本地论文"
+	rr := httptest.NewRecorder()
+	routerFor(&fakeAPI{summaries: []apiclient.PaperSummary{
+		{PaperID: "ax", Status: "parsed", UploadedFilename: "ax.pdf", SourceType: "arxiv"},
+		{PaperID: "lo", Title: &title, Status: "parsed", UploadedFilename: "lo.pdf", SourceType: "local_pdf"},
+	}}).ServeHTTP(rr, httptest.NewRequest(http.MethodGet, "/?source=local&group=date", nil))
+	body := rr.Body.String()
+	if !strings.Contains(body, "/papers/lo") || strings.Contains(body, "/papers/ax") {
+		t.Fatalf("local view should show lo not ax:\n%s", body)
 	}
 }
 
